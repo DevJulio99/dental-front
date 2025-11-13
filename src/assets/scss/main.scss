@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Importa los estilos de react-big-calendar */
+@import 'react-big-calendar/lib/css/react-big-calendar.css';
+
+/* Puedes mantener estilos globales aquí si lo necesitas */
+body {
+    @apply bg-gray-100 text-gray-800;
+}
