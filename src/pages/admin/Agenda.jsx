@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css'; // ¡Importación clave!
+import './Agenda.scss';
 import toast from 'react-hot-toast';
 import format from 'date-fns/format';
 import parse from 'date-fns/parse';
@@ -33,9 +34,11 @@ const workDayEnd = new Date();
 workDayEnd.setHours(18, 0, 0, 0);
 
 const CustomEvent = ({ event }) => (
-  <div title={event.title}>
-    <strong className="font-semibold">{event.title.split(' - ')[0]}</strong> -{' '}
-    <span className="truncate">{event.title.split(' - ')[1]}</span>
+  <div className={`h-full pl-2 border-l-4 ${event.style?.borderClass || 'border-transparent'}`}>
+    <div title={event.title} className="h-full flex flex-col justify-center overflow-hidden">
+      <strong className="font-semibold truncate block">{event.title.split(' - ')[0]}</strong>
+      <span className="truncate block text-xs">{event.title.split(' - ')[1]}</span>
+    </div>
   </div>
 );
 
@@ -50,6 +53,28 @@ const Agenda = () => {
   const [modalData, setModalData] = useState(null); // Guardará slotInfo o el evento a editar
   const [appointmentToDelete, setAppointmentToDelete] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date()); // Estado para la fecha actual del calendario
+
+  // Paleta de colores para asignar a cada odontólogo
+  const colorPalette = useMemo(
+    () => [
+      { background: '#eff6ff', border: '#3b82f6', text: '#1e40af', borderClass: 'border-blue-500' },
+      { background: '#f0fdf4', border: '#22c55e', text: '#166534', borderClass: 'border-green-500' },
+      { background: '#faf5ff', border: '#9333ea', text: '#581c87', borderClass: 'border-purple-500' },
+      { background: '#fefce8', border: '#eab308', text: '#854d0e', borderClass: 'border-yellow-500' },
+      { background: '#fdf2f8', border: '#ec4899', text: '#9d2463', borderClass: 'border-pink-500' },
+      { background: '#eef2ff', border: '#6366f1', text: '#3730a3', borderClass: 'border-indigo-500' },
+    ],
+    []
+  );
+
+  // Asigna un color a cada odontólogo para consistencia visual
+  const userColorMap = useMemo(() => {
+    const map = new Map();
+    users.forEach((user, index) => {
+      map.set(user.id, colorPalette[index % colorPalette.length]);
+    });
+    return map;
+  }, [users, colorPalette]);
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -174,6 +199,26 @@ const Agenda = () => {
     }
   };
 
+  // Función para aplicar estilos personalizados a cada evento del calendario
+  const eventPropGetter = useCallback((event) => {
+    const userColor = userColorMap.get(event.resource?.usuarioId);
+    const style = {
+      backgroundColor: '#f3f4f6',
+      color: '#1f2937',
+      borderRadius: '5px',
+      border: 'none',
+      boxShadow: '0 2px 5px rgba(0, 0, 0, 0.15)',
+      borderClass: 'border-gray-400'
+    };
+
+    if (userColor) {
+      style.backgroundColor = userColor.background;
+      style.color = userColor.text;
+      style.borderClass = userColor.borderClass;
+    }
+    return { style };
+  }, [userColorMap]);
+
   // Abre el modal de confirmación para eliminar
   const handleDeleteAppointment = (appointment) => {
     setAppointmentToDelete(appointment);
@@ -223,6 +268,9 @@ const Agenda = () => {
           defaultView='week' // Cambiamos la vista por defecto a 'semana'
           onSelectSlot={handleSelectSlot}
           selectable={'click'} // 'click' es clave para que onSelectSlot se active con un solo clic
+          step={15} // Cada slot representa 15 minutos
+          timeslots={4} // Se mostrarán 4 slots por hora
+          eventPropGetter={eventPropGetter} // Aplicamos nuestros estilos personalizados
           components={{
             event: CustomEvent,
           }}
