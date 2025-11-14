@@ -32,6 +32,13 @@ workDayStart.setHours(9, 0, 0, 0);
 const workDayEnd = new Date();
 workDayEnd.setHours(18, 0, 0, 0);
 
+const CustomEvent = ({ event }) => (
+  <div title={event.title}>
+    <strong className="font-semibold">{event.title.split(' - ')[0]}</strong> -{' '}
+    <span className="truncate">{event.title.split(' - ')[1]}</span>
+  </div>
+);
+
 const Agenda = () => {
   const [events, setEvents] = useState([]);
   const [patients, setPatients] = useState([]);
@@ -216,6 +223,9 @@ const Agenda = () => {
           defaultView='week' // Cambiamos la vista por defecto a 'semana'
           onSelectSlot={handleSelectSlot}
           selectable={'click'} // 'click' es clave para que onSelectSlot se active con un solo clic
+          components={{
+            event: CustomEvent,
+          }}
           messages={{
             next: "Siguiente",
             previous: "Anterior",
