@@ -1,13 +1,14 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import AdminLayout from '../layouts/AdminLayout/AdminLayout';
 import NotFound from '../pages/NotFound';
-import PrivateRoute from './PrivateRoute';
 import LoadingSpinner from '../components/common/LoadingSpinner/LoadingSpinner';
+import PrivateRoute from './PrivateRoute';
 
 // --- Lazy Loading de las páginas ---
 // En lugar de importar directamente, usamos React.lazy con import() dinámico.
-const Login = lazy(() => import('../pages/auth/Login'));
+const Login = lazy(() => import('../pages/auth/Login')); // Ya estaba bien, pero lo confirmo
 const Dashboard = lazy(() => import('../pages/admin/Dashboard'));
 const Patients = lazy(() => import('../pages/admin/Patients'));
 const Agenda = lazy(() => import('../pages/admin/Agenda'));
@@ -19,8 +20,9 @@ const PublicBooking = lazy(() => import('../pages/public/PublicBooking'));
 
 const AppRouter = () => {
   return (
-    <Router>
-      {/* Envolvemos todo el sistema de rutas con Suspense */}
+    <>
+      {/* Colocamos el Toaster aquí para que siempre esté disponible junto a las rutas */}
+      <Toaster position="bottom-right" toastOptions={{ duration: 4000 }} />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           {/* Ruta pública para el login */}
@@ -49,7 +51,7 @@ const AppRouter = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
-    </Router>
+    </>
   );
 };
 

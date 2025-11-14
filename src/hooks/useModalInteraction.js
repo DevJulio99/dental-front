@@ -5,19 +5,19 @@ import { useEffect, useRef } from 'react';
  * @param {boolean} isOpen - Si el modal está abierto o no.
  * @param {function} onClose - La función a llamar para cerrar el modal.
  */
-export const useModalInteraction = (isOpen, onClose) => {
+export const useModalInteraction = (isOpen, onClose, isDisabled = false) => {
   const modalRef = useRef(null);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
+      if (!isDisabled && event.key === 'Escape') {
         onClose();
       }
     };
 
     const handleClickOutside = (event) => {
       // Cierra si se hace clic en el fondo (el div con ref) pero no en sus hijos
-      if (modalRef.current && event.target === modalRef.current) {
+      if (!isDisabled && modalRef.current && event.target === modalRef.current) {
         onClose();
       }
     };
@@ -31,7 +31,7 @@ export const useModalInteraction = (isOpen, onClose) => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isDisabled]);
 
   return modalRef;
 };

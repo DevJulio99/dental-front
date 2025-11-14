@@ -7,6 +7,7 @@ import startOfWeek from 'date-fns/startOfWeek';
 import getDay from 'date-fns/getDay';
 import es from 'date-fns/locale/es';
 import PublicAppointmentModal from './PublicAppointmentModal';
+import { useApi } from '../../hooks/useApi';
 
 // --- Simulación de datos que vendrían de la API para un consultorio específico ---
 
@@ -48,6 +49,7 @@ const dayMap = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 
 const PublicBooking = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
+  const { isLoading, post } = useApi();
 
   const { min, max } = useMemo(() => {
     let minHour = 24;
@@ -132,11 +134,24 @@ const PublicBooking = () => {
     setSelectedSlot(null);
   };
 
-  const handleConfirmBooking = (patientData) => {
-    // En una aplicación real, aquí harías una llamada a la API para guardar la cita
-    console.log('Reservando cita para:', patientData);
-    toast.success(`¡Cita reservada con éxito para ${patientData.fullName}!`);
-    handleCloseModal();
+  const handleConfirmBooking = async (payload) => {
+    const tenantInfo = JSON.parse(localStorage.getItem('tenant'));
+    const subdomain = tenantInfo?.subdominio;
+    
+    if (!subdomain) {
+      toast.error('No se pudo identificar el consultorio. La reserva no puede continuar.');
+      return;
+    }
+
+    try {
+      // Llamada real a la API para guardar la cita pública
+      // El 'payload' ya no contiene el subdominio.
+      await post(`/public/reservar-cita?subdomain=${subdomain}`, payload);
+      toast.success(`¡Cita reservada con éxito para ${payload.nombreCompleto}! Gracias por tu confianza.`);
+      handleCloseModal();
+    } catch (err) {
+      toast.error(err.message || 'No se pudo agendar la cita. Por favor, intenta de nuevo.');
+    }
   };
 
   return (
@@ -171,10 +186,10 @@ const PublicBooking = () => {
           />
         </div>
       </div>
-      {/* El componente del modal que faltaba */}
       <PublicAppointmentModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
+        isSaving={isLoading}
         onConfirm={handleConfirmBooking}
         slotInfo={selectedSlot}
       />

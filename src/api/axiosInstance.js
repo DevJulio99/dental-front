@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Crea una instancia de Axios con una configuración base
 const axiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api', // URL base de tu API
+  baseURL: `${process.env.REACT_APP_URL_BASE}/api` , // URL base de tu API
   headers: {
     'Content-Type': 'application/json',
   },
@@ -30,11 +30,16 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response, // Si la respuesta es exitosa, simplemente la devuelve
   (error) => {
-    if (error.response && error.response.status === 401) {
-      // Si el error es 401 (No autorizado), limpia el localStorage y recarga la página para ir al login.
+    // Solo intervenimos si el error es 401 y NO estamos en la página de login.
+    // Esto evita que una falla de login (que devuelve 401) cause una recarga innecesaria.
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      !window.location.pathname.includes('/login')
+    ) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      window.location.replace('/login'); // Usamos replace para no añadir al historial
     }
     return Promise.reject(error);
   }

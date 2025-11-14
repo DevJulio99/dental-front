@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PatientModal from '../../components/admin/PatientModal';
+import { format } from 'date-fns';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import { useApi } from '../../hooks/useApi';
 // Importamos los SVGs como componentes de React para poder estilizarlos
@@ -9,47 +10,11 @@ import { ReactComponent as EditIcon } from '../../assets/icons/ic-edit.svg';
 import { ReactComponent as TrashIcon } from '../../assets/icons/ic-delete.svg';
 import toast from 'react-hot-toast';
 
-// --- INICIO: Simulación de Backend ---
-// Estos serían los datos que tu API devolvería desde la base de datos.
-const samplePatientsData = [
-  {
-    id: 1,
-    fullName: 'Juan Pérez García',
-    dni: '12345678A',
-    birthDate: '1985-05-20',
-    email: 'juan.perez@example.com',
-    phone: '600 11 22 33',
-    nextAppointment: '25/07/2024 10:30',
-  },
-  {
-    id: 2,
-    fullName: 'María López Fernández',
-    dni: '87654321B',
-    birthDate: '1992-11-15',
-    email: 'maria.lopez@example.com',
-    phone: '611 22 33 44',
-    nextAppointment: null,
-  },
-  {
-    id: 3,
-    fullName: 'Carlos Sánchez Ruiz',
-    dni: '11223344C',
-    birthDate: '1978-02-10',
-    email: 'carlos.sanchez@example.com',
-    phone: '622 33 44 55',
-    nextAppointment: '28/07/2024 16:00',
-  },
-];
-
-// Esta función simula una llamada a la API con un retardo.
-const fakeApiCall = (data) => {
-  return new Promise(resolve => setTimeout(() => resolve(data), 1000)); // Simula 1 segundo de espera
-};
-// --- FIN: Simulación de Backend ---
-
 const Patients = () => {
   const [patients, setPatients] = useState([]);
   const { isLoading, error, get, post, put, del } = useApi();
+  const [isListLoading, setIsListLoading] = useState(true);
+  const [listError, setListError] = useState(null); // Estado de error solo para el listado
   // `null` = cerrado, `undefined` = crear, `{...}` = editar
   const [editingPatient, setEditingPatient] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -59,15 +24,20 @@ const Patients = () => {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        // En un caso real, la línea sería:
-        // const data = await get('/patients');
-
-        // Para la simulación, usamos nuestra función fakeApiCall
-        const data = await fakeApiCall(samplePatientsData);
-        setPatients(data);
-      } catch (err) {
-        // El hook `useApi` ya establece el mensaje de error.
-        // No necesitamos hacer nada extra aquí, a menos que queramos un log.
+        setIsListLoading(true);
+        setListError(null); // Limpiamos el error de listado antes de cada petición
+        // Llamada real a la API para obtener la lista de pacientes
+        const data = await get('/Pacientes');
+        console.log('data:', data);
+        if (Array.isArray(data)) {
+          setPatients(data);
+        }
+      } catch (err) { // El error de `get` se captura aquí
+        setListError(err.message || 'No se pudo cargar la lista de pacientes.');
+        // El hook `useApi` ya maneja el estado de error, que se muestra en la tabla.
+        console.error("Error al obtener los pacientes:", err);
+      } finally {
+        setIsListLoading(false);
       }
     };
     fetchPatients();
@@ -92,32 +62,33 @@ const Patients = () => {
     setPatientToDelete(patient);
   };
 
-  const handleSavePatient = async (patientData) => {
+  const handleSavePatient = async (id, payload) => {
     try {
-      if (patientData.id) {
-        const updatedPatient = await put(`/patients/${patientData.id}`, patientData);
+      if (id) {
+        const updatedPatient = await put(`/Pacientes/${id}`, payload);
         setPatients(patients.map(p => p.id === updatedPatient.id ? updatedPatient : p));
         toast.success('Paciente actualizado con éxito.');
       } else {
-        const newPatient = await post('/patients', patientData);
+        const newPatient = await post('/Pacientes', payload);
         setPatients([...patients, newPatient]);
         toast.success('Paciente creado con éxito.');
       }
       handleCloseModal();
     } catch (err) {
-      toast.error(error || 'No se pudo guardar el paciente.');
+      toast.error(err.message || 'No se pudo guardar el paciente.');
     }
   };
 
   const handleDeletePatient = async () => {
     if (patientToDelete) {
       try {
-        await del(`/patients/${patientToDelete.id}`);
+        await del(`/Pacientes/${patientToDelete.id}`);
         setPatients(patients.filter(p => p.id !== patientToDelete.id));
         toast.success('Paciente eliminado con éxito.');
         setPatientToDelete(null); // Cierra el modal de confirmación
       } catch (err) {
-        toast.error(error || 'No se pudo eliminar el paciente.');
+        // Mostramos el error de eliminación solo en el toast
+        toast.error(err.message || 'No se pudo eliminar el paciente.');
       }
     }
   };
@@ -138,24 +109,24 @@ const Patients = () => {
           <thead className="text-xs text-gray-700 uppercase bg-gray-50">
             <tr>
               <th scope="col" className="px-6 py-3">Nombre Completo</th>
-              <th scope="col" className="px-6 py-3">DNI</th>
+              <th scope="col" className="px-6 py-3">DNI / Pasaporte</th>
               <th scope="col" className="px-6 py-3">Teléfono</th>
               <th scope="col" className="px-6 py-3">Próxima Cita</th>
               <th scope="col" className="px-6 py-3 text-right">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {isLoading && <tr><td colSpan="5" className="text-center p-4">Cargando...</td></tr>}
-            {error && !isLoading && <tr><td colSpan="5" className="text-center p-4 text-red-500">{error}</td></tr>}
-            {!isLoading && patients.map((patient) => (
+            {isListLoading && <tr><td colSpan="5" className="text-center p-4">Cargando...</td></tr>}
+            {listError && !isListLoading && <tr><td colSpan="5" className="text-center p-4 text-red-500">{listError}</td></tr>}
+            {!isListLoading && !listError && patients.map((patient) => (
               <tr key={patient.id} className="bg-white border-b hover:bg-gray-50">
                 <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                  {patient.fullName}
+                  {patient.nombreCompleto}
                 </th>
-                <td className="px-6 py-4">{patient.dni}</td>
-                <td className="px-6 py-4">{patient.phone}</td>
+                <td className="px-6 py-4">{patient.dniPasaporte}</td>
+                <td className="px-6 py-4">{patient.telefono}</td>
                 <td className="px-6 py-4">
-                  {patient.nextAppointment ? patient.nextAppointment : <span className="text-gray-400">Ninguna</span>}
+                  {patient.fechaUltimaCita ? format(new Date(patient.fechaUltimaCita), 'dd/MM/yyyy HH:mm') : <span className="text-gray-400">Ninguna</span>}
                 </td>
                 <td className="px-6 py-4 space-x-2 text-right">
                   <Link to={`/pacientes/${patient.id}`} className="inline-flex items-center p-2 text-sm font-medium text-center text-white rounded-lg bg-primary hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300" title="Ver Ficha">
@@ -179,14 +150,16 @@ const Patients = () => {
         onClose={handleCloseModal}
         patientToEdit={editingPatient}
         onSave={handleSavePatient}
+        isSaving={isLoading}
       />
 
       <ConfirmationModal
         isOpen={!!patientToDelete}
         onClose={() => setPatientToDelete(null)}
         onConfirm={handleDeletePatient}
+        isConfirming={isLoading}
         title="Confirmar Eliminación"
-        message={`¿Estás seguro de que deseas eliminar a ${patientToDelete?.fullName}? Esta acción no se puede deshacer.`}
+        message={`¿Estás seguro de que deseas eliminar a ${patientToDelete?.nombreCompleto}? Esta acción no se puede deshacer.`}
       />
     </div>
   );

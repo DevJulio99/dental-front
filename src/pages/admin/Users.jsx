@@ -1,47 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ReactComponent as EditIcon } from '../../assets/icons/ic-edit.svg';
 import { ReactComponent as TrashIcon } from '../../assets/icons/ic-delete.svg';
 import UserModal from '../../components/admin/UserModal';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
-
-// Datos de ejemplo. En una aplicación real, esto vendría de la API.
-const sampleUsers = [
-  {
-    id: 1,
-    fullName: 'Dr. Alan Grant',
-    email: 'alan.grant@example.com',
-    role: 'Odontólogo',
-  },
-  {
-    id: 2,
-    fullName: 'Ellie Sattler',
-    email: 'ellie.sattler@example.com',
-    role: 'Asistente',
-  },
-  {
-    id: 3,
-    fullName: 'Ian Malcolm',
-    email: 'ian.malcolm@example.com',
-    role: 'Odontólogo',
-  },
-  {
-    id: 4,
-    fullName: 'John Hammond',
-    email: 'john.hammond@example.com',
-    role: 'Administrador',
-  },
-];
+import { useApi } from '../../hooks/useApi';
+import toast from 'react-hot-toast';
 
 const roleClasses = {
-  'Odontólogo': 'bg-blue-100 text-blue-800',
+  'Odontologo': 'bg-blue-100 text-blue-800',
   'Asistente': 'bg-green-100 text-green-800',
-  'Administrador': 'bg-purple-100 text-purple-800',
+  'Admin': 'bg-purple-100 text-purple-800',
+  'SuperAdmin': 'bg-red-100 text-red-800',
+  'string': 'bg-gray-100 text-gray-800', // Fallback
 };
 
 const Users = () => {
+  const [users, setUsers] = useState([]);
+  const { isLoading, error, get, post, put, del } = useApi();
+  const [isListLoading, setIsListLoading] = useState(true);
+  const [listError, setListError] = useState(null);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [userToDelete, setUserToDelete] = useState(null);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setIsListLoading(true);
+        setListError(null);
+        const data = await get('/Usuarios');
+        if (Array.isArray(data)) {
+          setUsers(data);
+        }
+      } catch (err) {
+        setListError(err.message || 'No se pudo cargar la lista de usuarios.');
+      } finally {
+        setIsListLoading(false);
+      }
+    };
+    fetchUsers();
+  }, [get]);
 
   const handleOpenCreateModal = () => {
     setEditingUser(undefined);
@@ -58,22 +56,36 @@ const Users = () => {
     setEditingUser(null);
   };
 
-  const handleSaveUser = (userData) => {
-    if (userData.id) {
-      console.log('Editando usuario:', userData);
-      // TODO: API call to update user
-    } else {
-      console.log('Creando nuevo usuario:', userData);
-      // TODO: API call to create user
+  const handleSaveUser = async (id, payload) => {
+    try {
+      if (id) {
+        const updatedUser = await put(`/Usuarios/${id}`, payload);
+        setUsers(users.map(u => (u.id === id ? { ...u, ...payload } : u)));
+        toast.success('Usuario actualizado con éxito.');
+      } else {
+        const newUser = await post('/Usuarios', payload);
+        setUsers([...users, newUser]);
+        toast.success('Usuario creado con éxito.');
+      }
+      handleCloseUserModal();
+    } catch (err) {
+      toast.error(err.message || 'No se pudo guardar el usuario.');
     }
-    handleCloseUserModal();
   };
 
   const handleDeleteUser = () => {
     if (userToDelete) {
-      console.log('Eliminando usuario:', userToDelete);
-      // TODO: API call to delete user
-      setUserToDelete(null);
+      const deleteUser = async () => {
+        try {
+          await del(`/Usuarios/${userToDelete.id}`);
+          setUsers(users.filter(u => u.id !== userToDelete.id));
+          toast.success('Usuario eliminado con éxito.');
+          setUserToDelete(null);
+        } catch (err) {
+          toast.error(err.message || 'No se pudo eliminar el usuario.');
+        }
+      };
+      deleteUser();
     }
   };
 
@@ -100,11 +112,13 @@ const Users = () => {
             </tr>
           </thead>
           <tbody>
-            {sampleUsers.map((user) => (
+            {isListLoading && <tr><td colSpan="4" className="text-center p-4">Cargando...</td></tr>}
+            {listError && !isListLoading && <tr><td colSpan="4" className="text-center p-4 text-red-500">{listError}</td></tr>}
+            {!isListLoading && !listError && users.map((user) => (
               <tr key={user.id} className="bg-white border-b hover:bg-gray-50">
-                <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{user.fullName}</th>
+                <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{`${user.nombre} ${user.apellido}`}</th>
                 <td className="px-6 py-4">{user.email}</td>
-                <td className="px-6 py-4"><span className={`px-2 py-1 text-xs font-semibold rounded-full ${roleClasses[user.role] || 'bg-gray-100 text-gray-800'}`}>{user.role}</span></td>
+                <td className="px-6 py-4"><span className={`px-2 py-1 text-xs font-semibold rounded-full ${roleClasses[user.rol] || 'bg-gray-100 text-gray-800'}`}>{user.rol}</span></td>
                 <td className="px-6 py-4 space-x-2 text-right">
                   <button onClick={() => handleOpenEditModal(user)} className="inline-flex items-center p-2 text-sm font-medium text-center text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 focus:ring-4 focus:outline-none focus:ring-yellow-300" title="Editar"><EditIcon className="w-4 h-4 text-white" /></button>
                   <button onClick={() => setUserToDelete(user)} className="inline-flex items-center p-2 text-sm font-medium text-center text-white rounded-lg bg-error hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300" title="Eliminar"><TrashIcon className="w-4 h-4 text-white" /></button>
@@ -120,14 +134,16 @@ const Users = () => {
         onClose={handleCloseUserModal}
         userToEdit={editingUser}
         onSave={handleSaveUser}
+        isSaving={isLoading}
       />
 
       <ConfirmationModal
         isOpen={!!userToDelete}
         onClose={() => setUserToDelete(null)}
         onConfirm={handleDeleteUser}
+        isConfirming={isLoading}
         title="Confirmar Eliminación de Usuario"
-        message={`¿Estás seguro de que deseas eliminar a ${userToDelete?.fullName}? Esta acción no se puede deshacer.`}
+        message={`¿Estás seguro de que deseas eliminar a ${userToDelete?.nombre} ${userToDelete?.apellido}? Esta acción no se puede deshacer.`}
       />
     </div>
   );
