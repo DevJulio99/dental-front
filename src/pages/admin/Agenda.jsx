@@ -9,6 +9,7 @@ import getDay from 'date-fns/getDay';
 import { isBefore, startOfToday } from 'date-fns';
 import es from 'date-fns/locale/es';
 import AppointmentModal from '../../components/admin/AppointmentModal';
+import ConfirmationModal from '../../components/common/ConfirmationModal';
 import { useApi } from '../../hooks/useApi';
 
 // Configuración del localizador en español
@@ -35,11 +36,12 @@ const Agenda = () => {
   const [events, setEvents] = useState([]);
   const [patients, setPatients] = useState([]);
   const [users, setUsers] = useState([]);
-  const { isLoading, get, post, put } = useApi();
+  const { isLoading, get, post, put, del } = useApi();
   const [isListLoading, setIsListLoading] = useState(true);
   const [listError, setListError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalData, setModalData] = useState(null); // Guardará slotInfo o el evento a editar
+  const [appointmentToDelete, setAppointmentToDelete] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date()); // Estado para la fecha actual del calendario
 
   useEffect(() => {
@@ -55,18 +57,24 @@ const Agenda = () => {
           get('/Usuarios')
         ]);
 
+        // Primero, poblamos los estados de pacientes y usuarios.
+        const validPatients = Array.isArray(patientsData) ? patientsData : [];
+        const validUsers = Array.isArray(usersData) ? usersData.filter(u => u.rol === 'Odontologo') : [];
+        setPatients(validPatients);
+        setUsers(validUsers);
+
+        // Luego, con los datos ya disponibles, formateamos las citas.
         if (Array.isArray(citasData)) {
           const formattedEvents = citasData.map(cita => ({
             id: cita.id, // Propiedad requerida por el calendario
-            title: `${cita.motivo} - ${cita.pacienteNombre}`,
+            title: `${cita.motivo} - ${validPatients.find(p => p.id === cita.pacienteId)?.nombreCompleto || 'Paciente no encontrado'}`,
             start: new Date(cita.fechaHora),
-            end: new Date(`${cita.appointmentDate}T${cita.endTime}`),
-            ...cita,
+            end: new Date(new Date(cita.fechaHora).getTime() + cita.duracionMinutos * 60000),
+            // Anidamos el resto de los datos en 'resource' para no interferir con el calendario
+            resource: cita,
           }));
           setEvents(formattedEvents);
         }
-        if (Array.isArray(patientsData)) setPatients(patientsData);
-        if (Array.isArray(usersData)) setUsers(usersData.filter(u => u.rol === 'Odontologo'));
       } catch (err) {
         setListError(err.message || 'No se pudo cargar la agenda.');
         toast.error('Error al cargar las citas.');
@@ -80,8 +88,9 @@ const Agenda = () => {
 
   // Esta función se dispara al hacer clic en una cita existente
   const handleSelectEvent = (event) => {
+    console.log('event:', event.resource);
     // Abrimos el modal en modo edición, pasando el evento seleccionado
-    setModalData({ eventToEdit: event });
+    setModalData({ eventToEdit: event.resource }); // Pasamos los datos anidados
     setIsModalOpen(true);
   };
 
@@ -89,8 +98,8 @@ const Agenda = () => {
   const handleSelectSlot = (slotInfo) => {
     console.log('slotInfo:', slotInfo);
     // Validamos que no se puedan crear citas en el pasado.
-    if (isBefore(slotInfo.start, startOfToday())) {
-      toast.error('No se pueden agendar citas en fechas pasadas.');
+    if (isBefore(slotInfo.start, new Date())) {
+      toast.error('No se pueden agendar citas en fechas u horas pasadas.');
       return; // No abre el modal
     }
     // Abrimos el modal en modo creación, pasando la info del slot
@@ -114,26 +123,40 @@ const Agenda = () => {
     setModalData(null);
   };
 
-  const handleSaveAppointment = async (eventDataForUI) => {
+  const handleSaveAppointment = async (id, payload) => {
     try {
-      const { id, ...payload } = eventDataForUI;
       if (id) {
         // Lógica de Edición (PUT)
-        const updatedAppointment = await put(`/Citas/${id}`, payload);
+        await put(`/Citas/${id}`, payload);
         
+        // Reconstruimos el objeto completo para actualizar la UI
+        const updatedAppointmentForUI = { id, ...payload };
+
         // Actualizamos el evento en la lista del calendario
-        setEvents(events.map(event => 
-          event.id === id ? eventDataForUI : event
-        ));
-        toast.success(`Cita para "${eventDataForUI.title}" actualizada.`);
+        setEvents(events.map(event => {
+          if (event.id === id) {
+            return { // Reconstruimos el evento para la UI
+              id: updatedAppointmentForUI.id,
+              title: `${updatedAppointmentForUI.motivo} - ${patients.find(p => p.id === updatedAppointmentForUI.pacienteId)?.nombreCompleto}`,
+              start: new Date(updatedAppointmentForUI.fechaHora),
+              end: new Date(new Date(updatedAppointmentForUI.fechaHora).getTime() + updatedAppointmentForUI.duracionMinutos * 60000),
+              resource: updatedAppointmentForUI,
+            };
+          }
+          return event;
+        }));
+        toast.success(`Cita actualizada con éxito.`);
       } else {
         // Lógica de Creación (POST)
         const newAppointment = await post('/Citas', payload);
         
         // Añadimos el nuevo evento a la lista del calendario
         const newEventForUI = {
-          ...eventDataForUI, // Mantenemos los datos para la UI
-          id: newAppointment.id, // Usamos el ID devuelto por la API
+          id: newAppointment.id,
+          title: `${payload.motivo} - ${patients.find(p => p.id === payload.pacienteId)?.nombreCompleto}`,
+          start: new Date(payload.fechaHora),
+          end: new Date(new Date(payload.fechaHora).getTime() + payload.duracionMinutos * 60000),
+          resource: { ...payload, id: newAppointment.id },
         };
         setEvents([...events, newEventForUI]);
         toast.success(`Cita para "${newEventForUI.title}" agendada.`);
@@ -141,6 +164,29 @@ const Agenda = () => {
       handleCloseModal();
     } catch (err) {
       toast.error(err.message || 'No se pudo guardar la cita.');
+    }
+  };
+
+  // Abre el modal de confirmación para eliminar
+  const handleDeleteAppointment = (appointment) => {
+    setAppointmentToDelete(appointment);
+    // Cerramos el modal de edición para que no se solapen
+    handleCloseModal();
+  };
+
+  // Se ejecuta si el usuario confirma la eliminación
+  const handleConfirmDelete = async () => {
+    if (appointmentToDelete) {
+      try {
+        await del(`/Citas/${appointmentToDelete.id}`);
+        setEvents(events.filter(event => event.id !== appointmentToDelete.id));
+        toast.success('Cita eliminada con éxito.');
+        setAppointmentToDelete(null); // Cierra el modal de confirmación
+      } catch (err) {
+        toast.error(err.message || 'No se pudo eliminar la cita.');
+      } finally {
+        setAppointmentToDelete(null);
+      }
     }
   };
 
@@ -153,7 +199,7 @@ const Agenda = () => {
   }
 
   return (
-    <div className="relative h-[calc(100vh-8rem)]"> {/* Contenedor ÚNICO con altura y posición relativa */}
+    <div className="relative h-[calc(100vh-8rem)]">
         <Calendar
           localizer={localizer}
           events={events}
@@ -191,11 +237,20 @@ const Agenda = () => {
           isOpen={isModalOpen}
           onClose={handleCloseModal}
           onSave={handleSaveAppointment}
+          onDelete={handleDeleteAppointment}
           slotInfo={modalData?.slotInfo}
           eventToEdit={modalData?.eventToEdit}
-        patients={patients}
-        users={users}
-        isSaving={isLoading}
+          patients={patients}
+          users={users}
+          events={events}
+      />
+      <ConfirmationModal
+        isOpen={!!appointmentToDelete}
+        onClose={() => setAppointmentToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        isConfirming={isLoading}
+        title="Confirmar Eliminación de Cita"
+        message={`¿Estás seguro de que deseas eliminar la cita para "${appointmentToDelete?.motivo}"? Esta acción no se puede deshacer.`}
       />
     </div>
   );
