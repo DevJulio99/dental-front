@@ -39,7 +39,9 @@ const AdminLayout = () => {
           </NavLink>
         </nav>
         <div className="p-4 border-t border-gray-700">
-          <p className="font-semibold text-center">{user?.name || 'Usuario'}</p>
+          <p className="font-semibold text-center truncate">
+            {user ? `${user.nombre || ''} ${user.apellido || ''}`.trim() : 'Usuario'}
+          </p>
           <button onClick={logout} className="w-full px-4 py-2 mt-2 text-sm font-medium text-white transition-colors duration-200 transform bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:bg-red-700">
             Cerrar Sesión
           </button>
