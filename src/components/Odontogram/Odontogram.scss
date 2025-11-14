@@ -1,0 +1,187 @@
+.odontogram-container {
+  width: 100%;
+  
+  // Animaciones suaves mejoradas
+  * {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  // Mejoras para los controles
+  input[type="date"],
+  input[type="checkbox"],
+  select,
+  textarea {
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+      transform: translateY(-1px);
+    }
+  }
+
+  // Estilos para los botones de estado
+  button {
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    
+    &:not(:disabled):active {
+      transform: scale(0.98);
+    }
+  }
+
+  // Mejoras para el grid del odontograma
+  .grid {
+    gap: 1rem;
+    
+    @media (min-width: 768px) {
+      gap: 2rem;
+    }
+  }
+
+  // Estilos para el modal
+  .modal-overlay {
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  // Scrollbar personalizado para el historial
+  .overflow-y-auto {
+    &::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 5px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #888 0%, #666 100%);
+      border-radius: 5px;
+      border: 2px solid #f1f1f1;
+
+      &:hover {
+        background: linear-gradient(180deg, #666 0%, #555 100%);
+      }
+    }
+  }
+
+  // Efectos hover mejorados
+  .hover\:scale-110:hover {
+    transform: scale(1.1);
+  }
+
+  .hover\:scale-102:hover {
+    transform: scale(1.02);
+  }
+
+  .hover\:shadow-lg:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  // Animaciones
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .animate-slideIn {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  // Mejoras de accesibilidad
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  }
+
+  // Efectos de transición para los dientes
+  .tooth-container {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover {
+      transform: translateY(-2px);
+    }
+    
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  // Responsive improvements
+  @media (max-width: 640px) {
+    .flex-wrap {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    // Ajustar tamaño de dientes en móvil
+    svg {
+      width: 40px !important;
+      height: 40px !important;
+    }
+  }
+
+  // Mejoras para impresión
+  @media print {
+    .no-print {
+      display: none;
+    }
+  }
+}
+

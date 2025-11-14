@@ -1,0 +1,276 @@
+import React, { useState, useEffect } from 'react';
+import { useApi } from '../../hooks/useApi';
+import toast from 'react-hot-toast';
+import { format } from 'date-fns';
+import es from 'date-fns/locale/es';
+
+const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate }) => {
+  const { get, post, isLoading } = useApi();
+  const [historial, setHistorial] = useState([]);
+  const [loadingHistorial, setLoadingHistorial] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState('sano');
+  const [observaciones, setObservaciones] = useState('');
+  const [fechaRegistro, setFechaRegistro] = useState(new Date().toISOString().split('T')[0]);
+
+  const statusOptions = [
+    { id: 'sano', label: 'Sano', color: 'bg-white border-gray-400' },
+    { id: 'curado', label: 'Curado', color: 'bg-blue-500' },
+    { id: 'pendiente', label: 'Pendiente', color: 'bg-yellow-400' },
+    { id: 'caries', label: 'Caries', color: 'bg-purple-500' },
+    { id: 'extraido', label: 'Extraído', color: 'bg-red-500' },
+    { id: 'endodoncia', label: 'Endodoncia', color: 'bg-cyan-500' },
+    { id: 'corona', label: 'Corona', color: 'bg-amber-500' },
+    { id: 'implante', label: 'Implante', color: 'bg-emerald-500' },
+    { id: 'fracturado', label: 'Fracturado', color: 'bg-orange-500' },
+    { id: 'a_extraer', label: 'A Extraer', color: 'bg-red-600' },
+    { id: 'puente', label: 'Puente', color: 'bg-violet-500' },
+  ];
+
+  useEffect(() => {
+    if (isOpen && patientId && toothNumber) {
+      loadHistorial();
+    }
+  }, [isOpen, patientId, toothNumber]);
+
+  const loadHistorial = async () => {
+    setLoadingHistorial(true);
+    try {
+      const data = await get(`/Odontogramas/paciente/${patientId}/diente/${toothNumber}/historial`);
+      setHistorial(data || []);
+    } catch (error) {
+      toast.error('Error al cargar el historial del diente');
+      console.error(error);
+    } finally {
+      setLoadingHistorial(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!selectedStatus) {
+      toast.error('Seleccione un estado');
+      return;
+    }
+
+    try {
+      const fecha = fechaRegistro ? new Date(fechaRegistro + 'T00:00:00') : new Date();
+      const fechaFormatted = fecha.toISOString().split('T')[0];
+
+      await post('/Odontogramas', {
+        pacienteId: patientId,
+        numeroDiente: toothNumber,
+        estado: selectedStatus,
+        observaciones: observaciones.trim() || null,
+        fechaRegistroDateTime: fechaFormatted,
+      });
+
+      toast.success(`Estado del diente ${toothNumber} actualizado correctamente`);
+      setObservaciones('');
+      setFechaRegistro(new Date().toISOString().split('T')[0]);
+      setSelectedStatus('sano');
+      await loadHistorial();
+      if (onUpdate) onUpdate();
+    } catch (error) {
+      toast.error('Error al guardar el estado del diente');
+      console.error(error);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div className="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-50 backdrop-blur-sm" onClick={onClose}></div>
+
+        <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+          {/* Header mejorado */}
+          <div className="bg-gradient-to-r from-primary to-blue-600 px-6 pt-6 pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg">
+                  <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">
+                    Diente {toothNumber}
+                  </h3>
+                  <p className="text-sm text-blue-100">Historial y Detalles</p>
+                </div>
+              </div>
+              <button
+                onClick={onClose}
+                className="text-white hover:text-gray-200 focus:outline-none p-2 hover:bg-white/20 rounded-lg transition-colors"
+              >
+                <span className="sr-only">Cerrar</span>
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-white px-6 pt-6 pb-4">
+
+            {/* Formulario para agregar nuevo registro mejorado */}
+            <div className="mb-6 p-5 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl border-2 border-gray-200 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <h4 className="text-base font-bold text-gray-800">Agregar Nuevo Registro</h4>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Estado
+                  </label>
+                  <select
+                    value={selectedStatus}
+                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  >
+                    {statusOptions.map(opt => (
+                      <option key={opt.id} value={opt.id}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Fecha de Registro
+                  </label>
+                  <input
+                    type="date"
+                    value={fechaRegistro}
+                    onChange={(e) => setFechaRegistro(e.target.value)}
+                    max={new Date().toISOString().split('T')[0]}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Observaciones (opcional)
+                </label>
+                <textarea
+                  value={observaciones}
+                  onChange={(e) => setObservaciones(e.target.value)}
+                  rows="3"
+                  maxLength={1000}
+                  placeholder="Agregar observaciones sobre el estado del diente..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+                <p className="text-xs text-gray-500 mt-1">{observaciones.length}/1000 caracteres</p>
+              </div>
+
+              <button
+                onClick={handleSave}
+                disabled={isLoading}
+                className="w-full px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+              >
+                {isLoading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Guardar Registro
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Historial mejorado */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200">
+                <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h4 className="text-base font-bold text-gray-800">Historial de Cambios</h4>
+              </div>
+              {loadingHistorial ? (
+                <div className="text-center py-8">
+                  <div className="inline-block w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary"></div>
+                  <p className="mt-2 text-sm text-gray-500">Cargando historial...</p>
+                </div>
+              ) : historial.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No hay registros históricos para este diente</p>
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                  {historial.map((registro, index) => (
+                    <div
+                      key={registro.id || index}
+                      className="p-4 border-2 border-gray-200 rounded-xl hover:border-primary hover:shadow-md transition-all duration-200 bg-white"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2 flex-wrap">
+                            <span
+                              className={`px-3 py-1.5 text-xs font-bold rounded-lg shadow-sm ${
+                                statusOptions.find(s => s.id === registro.estado)?.color || 'bg-gray-200'
+                              } ${statusOptions.find(s => s.id === registro.estado)?.id === 'sano' ? 'text-gray-700 border-2 border-gray-400' : 'text-white'}`}
+                            >
+                              {statusOptions.find(s => s.id === registro.estado)?.label || registro.estado}
+                            </span>
+                            <div className="flex items-center gap-1 text-xs text-gray-600">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              {format(new Date(registro.fechaRegistroDateTime || registro.fechaRegistro), 'dd/MM/yyyy', { locale: es })}
+                            </div>
+                          </div>
+                          {registro.observaciones && (
+                            <div className="mt-2 p-2 bg-gray-50 rounded-lg border-l-4 border-primary">
+                              <p className="text-sm text-gray-700">{registro.observaciones}</p>
+                            </div>
+                          )}
+                          {registro.usuarioNombre && (
+                            <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                              </svg>
+                              Registrado por: <span className="font-semibold">{registro.usuarioNombre}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse border-t border-gray-200">
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full inline-flex justify-center items-center gap-2 rounded-lg border border-transparent shadow-md px-6 py-3 bg-gray-600 text-base font-semibold text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200 sm:ml-3 sm:w-auto sm:text-sm"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ToothDetailModal;
+
