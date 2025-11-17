@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import es from 'date-fns/locale/es';
 import Tooth from './Tooth';
 import ToothDetailModal from './ToothDetailModal';
+import ToothUpdateModal from './ToothUpdateModal';
 import { ReactComponent as CalendarIcon } from '../../assets/icons/ic-calendar.svg';
 import './Odontogram.scss';
 import LoadingSpinner from '../common/LoadingSpinner/LoadingSpinner';
@@ -38,13 +39,10 @@ const Odontogram = ({ patientId }) => {
   const [error, setError] = useState(null);
   
   // Estados de UI
-  const [selectedStatus, setSelectedStatus] = useState('sano');
-  const [changeDate, setChangeDate] = useState(new Date().toISOString().split('T')[0]);
   const [isViewingHistory, setIsViewingHistory] = useState(false);
   const [viewDate, setViewDate] = useState(new Date().toISOString().split('T')[0]);
-  const [isChangeDateEnabled, setIsChangeDateEnabled] = useState(false);
-  const [observaciones, setObservaciones] = useState('');
   const [selectedTooth, setSelectedTooth] = useState(null);
+  const [toothToUpdate, setToothToUpdate] = useState(null);
   const [showLegend, setShowLegend] = useState(false);
 
   // Cargar estado actual de los dientes
@@ -90,8 +88,8 @@ const Odontogram = ({ patientId }) => {
     if (!patientId || !fecha) return;
     
     try {
-      const fechaFormatted = format(new Date(fecha), 'yyyy-MM-dd');
-      const data = await get(`/Odontogramas/paciente/${patientId}/estado-en-fecha?fecha=${fechaFormatted}`);
+      const fechaLocal = new Date(fecha.replace(/-/g, '/'));
+      const data = await get(`/Odontogramas/paciente/${patientId}/estado-en-fecha?fecha=${format(fechaLocal, 'yyyy-MM-dd')}`);
       
       const estados = {};
       ALL_TEETH.forEach(toothNum => {
@@ -123,49 +121,39 @@ const Odontogram = ({ patientId }) => {
     }
   }, [isViewingHistory, viewDate, loadEstadoEnFecha, loadEstadoActual]);
 
-  // Manejar clic en diente
-  const handleToothClick = async (toothNumber, isDoubleClick = false) => {
-    // Si es doble clic, siempre abrir modal de historial
-    if (isDoubleClick) {
-      setSelectedTooth(toothNumber);
-      return;
-    }
-
+  const handleToothClick = (toothNumber) => {
     if (isViewingHistory) {
-      // En modo historial, abrir modal con detalles
       setSelectedTooth(toothNumber);
       return;
     }
+    // En modo edición, abre el modal de actualización
+    setToothToUpdate(toothNumber);
+  };
 
-    // Validar fecha
-    const fechaSeleccionada = isChangeDateEnabled ? changeDate : new Date().toISOString().split('T')[0];
-    const fechaObj = new Date(fechaSeleccionada + 'T00:00:00');
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-    
-    if (fechaObj > hoy) {
-      toast.error('No se pueden registrar fechas futuras');
-      return;
-    }
+  const handleDoubleClick = (toothNumber) => {
+    // El doble clic siempre abre el historial
+    setSelectedTooth(toothNumber);
+  };
 
+  const handleUpdateStatus = async (toothNumber, status, observaciones, fecha) => {
     try {
       await post('/Odontogramas', {
         pacienteId: patientId,
         numeroDiente: toothNumber,
-        estado: selectedStatus,
+        estado: status,
         observaciones: observaciones.trim() || null,
-        fechaRegistroDateTime: fechaSeleccionada,
+        fechaRegistroDateTime: fecha,
       });
 
-      const fechaFormateada = format(fechaObj, 'dd/MM/yyyy', { locale: es });
-      toast.success(`Diente ${toothNumber}: estado "${statusOptions.find(s => s.id === selectedStatus)?.label}" registrado el ${fechaFormateada}`);
+      const fechaFormateada = format(new Date(fecha + 'T00:00:00'), 'dd/MM/yyyy', { locale: es });
+      toast.success(`Diente ${toothNumber}: estado "${statusOptions.find(s => s.id === status)?.label}" registrado el ${fechaFormateada}`);
 
       // Recargar datos
       await loadEstadoActual();
       await loadHistorialAgrupado();
       
-      // Limpiar observaciones
-      setObservaciones('');
+      // Cerrar el modal
+      setToothToUpdate(null);
     } catch (err) {
       toast.error('Error al guardar el estado del diente');
       console.error(err);
@@ -199,21 +187,14 @@ const Odontogram = ({ patientId }) => {
               key={num}
               number={num}
               status={getToothStatus(num)}
-              onClick={() => handleToothClick(num, false)}
-              onDoubleClick={() => handleToothClick(num, true)}
+              onClick={() => handleToothClick(num)}
+              onDoubleClick={() => handleDoubleClick(num)}
               hasHistory={hasHistory(num)}
             />
           ))}
         </div>
       </div>
     );
-  };
-
-  const handleToggleChangeDate = () => {
-    setIsChangeDateEnabled(!isChangeDateEnabled);
-    if (!isChangeDateEnabled) {
-      setChangeDate(new Date().toISOString().split('T')[0]);
-    }
   };
 
   const handleHistoryToggle = (checked) => {
@@ -304,7 +285,10 @@ const Odontogram = ({ patientId }) => {
                   type="date"
                   id="viewDate"
                   value={viewDate}
-                  onChange={(e) => setViewDate(e.target.value)}
+                  onChange={(e) => {
+                    console.log('e.target.value:', e.target.value);
+                    setViewDate(e.target.value)
+                  }}
                   max={new Date().toISOString().split('T')[0]}
                   className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
@@ -314,7 +298,7 @@ const Odontogram = ({ patientId }) => {
 
           {!isViewingHistory && (
             <div className="text-xs text-gray-600 bg-white px-3 py-2 rounded-lg border border-gray-200">
-              <span className="font-semibold">💡 Tip:</span> Selecciona un estado y haz clic en un diente para actualizarlo
+              <span className="font-semibold">💡 Tip:</span> Haz clic en un diente para actualizar su estado o doble clic para ver su historial.
             </div>
           )}
         </div>
@@ -339,129 +323,6 @@ const Odontogram = ({ patientId }) => {
                 <span className="text-sm font-medium text-gray-700">{opt.label}</span>
               </div>
             ))}
-          </div>
-        </div>
-      )}
-
-      {/* Controles de Edición mejorados */}
-      {!isViewingHistory && (
-        <div className="mb-6 space-y-5 p-5 bg-white border-2 border-gray-200 rounded-xl shadow-md">
-          <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200">
-            <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            <h4 className="text-lg font-bold text-gray-800">Panel de Edición</h4>
-          </div>
-
-          {/* Fecha del registro */}
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <div className="flex flex-wrap items-center gap-3">
-              <label htmlFor="changeDate" className="font-semibold text-sm text-gray-700 flex items-center gap-2">
-                <CalendarIcon className="w-4 h-4" />
-                Fecha del Registro:
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="date"
-                  id="changeDate"
-                  value={changeDate}
-                  onChange={(e) => setChangeDate(e.target.value)}
-                  disabled={!isChangeDateEnabled}
-                  max={new Date().toISOString().split('T')[0]}
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:bg-gray-200 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent shadow-sm"
-                />
-                <button
-                  onClick={handleToggleChangeDate}
-                  title={isChangeDateEnabled ? "Usar fecha actual" : "Permitir cambiar fecha"}
-                  className={`p-2 rounded-lg transition-all duration-200 ${
-                    isChangeDateEnabled 
-                      ? 'bg-primary text-white shadow-md hover:bg-primary-dark' 
-                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  }`}
-                >
-                  <CalendarIcon className="w-5 h-5" />
-                </button>
-              </div>
-              {!isChangeDateEnabled && (
-                <span className="text-xs text-gray-500 italic">(Usando fecha actual por defecto)</span>
-              )}
-            </div>
-          </div>
-
-          {/* Estados disponibles */}
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-              <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-              </svg>
-              Estado a Aplicar:
-            </label>
-            <div className="flex flex-wrap gap-2.5">
-              {statusOptions.map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => setSelectedStatus(opt.id)}
-                  className={`px-4 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 transform ${
-                    selectedStatus === opt.id
-                      ? `${opt.color} shadow-lg scale-105 ring-2 ring-offset-2 ring-current`
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700 hover:scale-102 border border-gray-300'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-            {selectedStatus && (
-              <p className="mt-2 text-xs text-gray-600 italic">
-                Estado seleccionado: <span className="font-semibold">{statusOptions.find(s => s.id === selectedStatus)?.label}</span>
-              </p>
-            )}
-          </div>
-
-          {/* Observaciones */}
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-              <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              Observaciones (opcional)
-            </label>
-            <textarea
-              value={observaciones}
-              onChange={(e) => setObservaciones(e.target.value)}
-              rows="3"
-              maxLength={1000}
-              placeholder="Agregar observaciones sobre el cambio de estado del diente..."
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm shadow-sm transition-all"
-            />
-            <div className="flex justify-between items-center mt-1">
-              <p className="text-xs text-gray-500">{observaciones.length}/1000 caracteres</p>
-              {observaciones.length > 0 && (
-                <button
-                  onClick={() => setObservaciones('')}
-                  className="text-xs text-red-600 hover:text-red-700 font-medium"
-                >
-                  Limpiar
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Instrucciones mejoradas */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border-l-4 border-primary">
-            <div className="flex items-start gap-3">
-              <div className="text-2xl">💡</div>
-              <div>
-                <p className="text-sm font-semibold text-gray-800 mb-1">Instrucciones de uso:</p>
-                <ol className="text-xs text-gray-700 space-y-1 list-decimal list-inside">
-                  <li>Selecciona un estado de la lista superior</li>
-                  <li>Opcionalmente, configura una fecha diferente (por defecto usa la fecha actual)</li>
-                  <li>Agrega observaciones si es necesario</li>
-                  <li>Haz clic en el diente que deseas actualizar en el odontograma</li>
-                  <li>Haz doble clic en un diente para ver su historial completo</li>
-                </ol>
-              </div>
-            </div>
           </div>
         </div>
       )}
@@ -548,6 +409,17 @@ const Odontogram = ({ patientId }) => {
             loadEstadoActual();
             loadHistorialAgrupado();
           }}
+        />
+      )}
+
+      {/* Modal para actualizar estado del diente */}
+      {toothToUpdate && (
+        <ToothUpdateModal
+          isOpen={!!toothToUpdate}
+          onClose={() => setToothToUpdate(null)}
+          toothNumber={toothToUpdate}
+          onUpdate={handleUpdateStatus}
+          isSaving={isLoading}
         />
       )}
     </div>
