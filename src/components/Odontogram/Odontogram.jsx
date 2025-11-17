@@ -7,6 +7,7 @@ import Tooth from './Tooth';
 import ToothDetailModal from './ToothDetailModal';
 import { ReactComponent as CalendarIcon } from '../../assets/icons/ic-calendar.svg';
 import './Odontogram.scss';
+import LoadingSpinner from '../common/LoadingSpinner/LoadingSpinner';
 
 // Todos los estados disponibles
 const statusOptions = [
@@ -225,10 +226,7 @@ const Odontogram = ({ patientId }) => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-primary"></div>
-        <p className="mt-4 text-gray-600">Cargando odontograma...</p>
-      </div>
+      <LoadingSpinner />
     );
   }
 

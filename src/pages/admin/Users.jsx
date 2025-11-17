@@ -5,6 +5,7 @@ import UserModal from '../../components/admin/UserModal';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import { useApi } from '../../hooks/useApi';
 import toast from 'react-hot-toast';
+import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
 
 const roleClasses = {
   'Odontologo': 'bg-blue-100 text-blue-800',
@@ -112,7 +113,7 @@ const Users = () => {
             </tr>
           </thead>
           <tbody>
-            {isListLoading && <tr><td colSpan="4" className="text-center p-4">Cargando...</td></tr>}
+            {isListLoading && <tr><td colSpan="4" className="text-center p-4"><LoadingSpinner /></td></tr>}
             {listError && !isListLoading && <tr><td colSpan="4" className="text-center p-4 text-red-500">{listError}</td></tr>}
             {!isListLoading && !listError && users.map((user) => (
               <tr key={user.id} className="bg-white border-b hover:bg-gray-50">

@@ -3,6 +3,7 @@ import { useApi } from '../../hooks/useApi';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import es from 'date-fns/locale/es';
+import LoadingSpinner from '../common/LoadingSpinner/LoadingSpinner';
 
 const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate }) => {
   const { get, post, isLoading } = useApi();
@@ -200,10 +201,7 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
                 <h4 className="text-base font-bold text-gray-800">Historial de Cambios</h4>
               </div>
               {loadingHistorial ? (
-                <div className="text-center py-8">
-                  <div className="inline-block w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary"></div>
-                  <p className="mt-2 text-sm text-gray-500">Cargando historial...</p>
-                </div>
+                <LoadingSpinner />
               ) : historial.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <p>No hay registros históricos para este diente</p>

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { AuthProvider } from './contexts/AuthContext';
 // import { TenantProvider } from './contexts/TenantContext'; // Descomentar si se implementa
 import AppRouter from './routes/AppRouter';

@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { BrowserRouter, useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
+import LoadingSpinner from '../components/common/LoadingSpinner/LoadingSpinner';
 
 export const AuthContext = createContext(null);
 
@@ -82,7 +83,7 @@ const AuthLogic = ({ children }) => {
 
   // No renderizamos los hijos hasta que sepamos si hay una sesión activa o no
   if (isSessionLoading) {
-    return <div>Cargando aplicación...</div>; // O un spinner de carga global
+    return <LoadingSpinner />
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

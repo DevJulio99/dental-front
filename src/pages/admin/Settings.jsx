@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useApi } from '../../hooks/useApi';
+import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
 
 const initialSchedule = {
   lunes: { enabled: false, availableTimes: [] },
@@ -104,7 +105,7 @@ const Settings = () => {
 
   if (isPageLoading) {
     return (
-      <div className="flex items-center justify-center h-full">Cargando configuración...</div>
+      <LoadingSpinner />
     );
   }
 

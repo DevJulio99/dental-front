@@ -1,16 +1,37 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { useModalInteraction } from '../../hooks/useModalInteraction';
 import { parseISO, isToday, isAfter, isEqual, startOfDay } from 'date-fns';
 import { format } from 'date-fns-tz';
-import { differenceInMinutes } from 'date-fns';
 import { useApi } from '../../hooks/useApi';
+import Select from 'react-select';
 
 const emptyForm = {
   pacienteId: '',
   usuarioId: '',
   motivo: '',
   observaciones: '',
+};
+
+const customSelectStyles = {
+  control: (provided, state) => ({
+    ...provided,
+    border: state.isFocused ? '2px solid #3b82f6' : '1px solid #d1d5db',
+    borderRadius: '0.375rem',
+    boxShadow: state.isFocused ? '0 0 0 2px rgba(59, 130, 246, 0.2)' : 'none',
+    '&:hover': {
+      borderColor: state.isFocused ? '#3b82f6' : '#9ca3af',
+    },
+    padding: '2px',
+  }),
+  option: (provided, state) => ({
+    ...provided,
+    backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#eff6ff' : 'white',
+    color: state.isSelected ? 'white' : '#1f2937',
+    '&:active': {
+      backgroundColor: '#2563eb',
+    },
+  }),
 };
 const AppointmentModal = ({ isOpen, onClose, onSave, onDelete, slotInfo, eventToEdit, patients, users, events }) => {
   const [formData, setFormData] = useState(emptyForm);
@@ -20,6 +41,16 @@ const AppointmentModal = ({ isOpen, onClose, onSave, onDelete, slotInfo, eventTo
   const { isLoading: isSaving, get } = useApi(); // Renombramos isLoading a isSaving para claridad
   const modalRef = useModalInteraction(isOpen, onClose, isSaving);
   const isEditing = !!eventToEdit;
+
+  const patientOptions = useMemo(() =>
+    patients.map(p => ({ value: p.id, label: p.nombreCompleto })),
+    [patients]
+  );
+
+  const selectedPatient = useMemo(() =>
+    patientOptions.find(option => option.value === formData.pacienteId),
+    [patientOptions, formData.pacienteId]
+  );
 
   // **CORREGIDO**: La fecha activa SIEMPRE debe ser la del día seleccionado en el calendario.
   // Al editar, `slotInfo` no existe, pero la fecha de la cita (`eventToEdit.fechaHora`) nos sirve
@@ -81,10 +112,9 @@ const AppointmentModal = ({ isOpen, onClose, onSave, onDelete, slotInfo, eventTo
     if (!formData.usuarioId) setAvailableTimes([]);
   }, [isOpen, isEditing, formData.usuarioId, activeDate, get]); // Depende de isEditing para no ejecutarse al editar.
 
-  if (!isOpen) {
-    return null;
-  }
-
+  const handlePatientChange = (selectedOption) => {
+    setFormData(prev => ({ ...prev, pacienteId: selectedOption ? selectedOption.value : '' }));
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.pacienteId || !formData.usuarioId || !formData.motivo) {
@@ -143,7 +173,6 @@ const AppointmentModal = ({ isOpen, onClose, onSave, onDelete, slotInfo, eventTo
     // **CORREGIDO**: Forzamos la interpretación de la hora como UTC para evitar conversiones de zona horaria.
     // Esto asegura que "12:00" se compare con "12:00", sin importar la zona horaria del navegador.
     .map(event => format(new Date(event.start), 'HH:mm:ss', { timeZone: 'UTC' }));
-  console.log('bookedTimes:', bookedTimes);
   const filteredTimes = availableTimes.filter(timeString => {
     // **CORREGIDO**: Hacemos lo mismo para los horarios disponibles, los tratamos como UTC.
     const availableTimePart = format(parseISO(timeString), 'HH:mm:ss', { timeZone: 'UTC' });
@@ -157,7 +186,9 @@ const AppointmentModal = ({ isOpen, onClose, onSave, onDelete, slotInfo, eventTo
     return !bookedTimes.includes(availableTimePart);
   });
 
-  console.log('filteredTimes:', filteredTimes);
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -170,10 +201,17 @@ const AppointmentModal = ({ isOpen, onClose, onSave, onDelete, slotInfo, eventTo
           <div className="space-y-4">
             <div>
               <label htmlFor="pacienteId" className="block text-sm font-medium text-gray-700">Paciente</label>
-              <select id="pacienteId" value={formData.pacienteId} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
-                <option value="" disabled>Seleccione un paciente</option>
-                {patients.map(p => <option key={p.id} value={p.id}>{p.nombreCompleto}</option>)}
-              </select>
+              <Select
+                id="pacienteId"
+                options={patientOptions}
+                value={selectedPatient}
+                onChange={handlePatientChange}
+                placeholder="Buscar y seleccionar un paciente..."
+                noOptionsMessage={() => 'No se encontraron pacientes'}
+                className="mt-1"
+                styles={customSelectStyles}
+                required
+              />
             </div>
             <div>
               <label htmlFor="usuarioId" className="block text-sm font-medium text-gray-700">Odontólogo</label>

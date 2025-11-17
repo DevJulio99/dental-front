@@ -9,6 +9,7 @@ import { ReactComponent as FileUserIcon } from '../../assets/icons/ic-file-user.
 import { ReactComponent as EditIcon } from '../../assets/icons/ic-edit.svg';
 import { ReactComponent as TrashIcon } from '../../assets/icons/ic-delete.svg';
 import toast from 'react-hot-toast';
+import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
 
 const Patients = () => {
   const [patients, setPatients] = useState([]);
@@ -116,7 +117,7 @@ const Patients = () => {
             </tr>
           </thead>
           <tbody>
-            {isListLoading && <tr><td colSpan="5" className="text-center p-4">Cargando...</td></tr>}
+            {isListLoading && <tr><td colSpan="5" className="text-center p-4"><LoadingSpinner /></td></tr>}
             {listError && !isListLoading && <tr><td colSpan="5" className="text-center p-4 text-red-500">{listError}</td></tr>}
             {!isListLoading && !listError && patients.map((patient) => (
               <tr key={patient.id} className="bg-white border-b hover:bg-gray-50">

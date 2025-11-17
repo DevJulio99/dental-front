@@ -22,7 +22,30 @@ const AppRouter = () => {
   return (
     <>
       {/* Colocamos el Toaster aquí para que siempre esté disponible junto a las rutas */}
-      <Toaster position="bottom-right" toastOptions={{ duration: 4000 }} />
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          duration: 5000,
+          success: {
+            style: {
+              background: '#f0fdf4',
+              color: '#166534',
+              border: '1px solid #22c55e',
+              padding: '16px',
+              fontSize: '1.1rem',
+            },
+          },
+          error: {
+            style: {
+              background: '#fef2f2',
+              color: '#991b1b',
+              border: '1px solid #ef4444',
+              padding: '16px',
+              fontSize: '1.1rem',
+            },
+          },
+        }}
+      />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           {/* Ruta pública para el login */}

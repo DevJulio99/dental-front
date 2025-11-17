@@ -12,6 +12,7 @@ import es from 'date-fns/locale/es';
 import AppointmentModal from '../../components/admin/AppointmentModal';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import { useApi } from '../../hooks/useApi';
+import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
 
 // Configuración del localizador en español
 const locales = {
@@ -129,7 +130,7 @@ const Agenda = () => {
   // Esta función se dispara al seleccionar un rango de tiempo vacío en el calendario
   const handleSelectSlot = (slotInfo) => {
     console.log('slotInfo:', slotInfo);
-    // Validamos que no se puedan crear citas en el pasado.
+    // Validamos que no se puedan crear citas en fechas u horas pasadas del día actual.
     if (isBefore(slotInfo.start, new Date())) {
       toast.error('No se pueden agendar citas en fechas u horas pasadas.');
       return; // No abre el modal
@@ -243,7 +244,7 @@ const Agenda = () => {
   };
 
   if (isListLoading) {
-    return <div className="flex items-center justify-center h-full">Cargando agenda...</div>;
+    return <LoadingSpinner />;
   }
 
   if (listError) {

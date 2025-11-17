@@ -3,6 +3,7 @@ import { Bar, Doughnut, Line } from 'react-chartjs-2';
 import { configureCharts } from '../../config/chartjs-config';
 import { useApi } from '../../hooks/useApi';
 import toast from 'react-hot-toast';
+import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
 
 // Registramos los componentes de Chart.js
 configureCharts();
@@ -108,7 +109,7 @@ const Reports = () => {
   };
 
   if (isLoading && !reportData) {
-    return <div className="flex items-center justify-center h-full">Cargando reportes...</div>;
+    return <LoadingSpinner />;
   }
 
   if (error && !reportData) {
