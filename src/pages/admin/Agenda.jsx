@@ -27,13 +27,6 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-// Horario de trabajo simulado. En una app real, esto vendría de la API
-// basado en la configuración que acabamos de crear.
-const workDayStart = new Date();
-workDayStart.setHours(9, 0, 0, 0);
-const workDayEnd = new Date();
-workDayEnd.setHours(18, 0, 0, 0);
-
 const CustomEvent = ({ event }) => (
   <div className={`h-full pl-2 border-l-4 ${event.style?.borderClass || 'border-transparent'}`}>
     <div title={event.title} className="h-full flex flex-col justify-center overflow-hidden">
@@ -54,6 +47,12 @@ const Agenda = () => {
   const [modalData, setModalData] = useState(null); // Guardará slotInfo o el evento a editar
   const [appointmentToDelete, setAppointmentToDelete] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date()); // Estado para la fecha actual del calendario
+  const [selectedUserId, setSelectedUserId] = useState(''); // Odontólogo seleccionado
+  const [scheduleConfig, setScheduleConfig] = useState([]); // Configuración de horario del odontólogo
+  const [workingHours, setWorkingHours] = useState({
+    start: new Date(new Date().setHours(9, 0, 0, 0)),
+    end: new Date(new Date().setHours(18, 0, 0, 0)),
+  });
 
   // Paleta de colores para asignar a cada odontólogo
   const colorPalette = useMemo(
@@ -95,6 +94,10 @@ const Agenda = () => {
         const validUsers = Array.isArray(usersData) ? usersData.filter(u => u.rol === 'Odontologo') : [];
         setPatients(validPatients);
         setUsers(validUsers);
+        
+        if (validUsers.length > 0 && !selectedUserId) {
+          setSelectedUserId(validUsers[0].id);
+        }
 
         // Luego, con los datos ya disponibles, formateamos las citas.
         if (Array.isArray(citasData)) {
@@ -119,6 +122,50 @@ const Agenda = () => {
     fetchAppointments();
   }, [get]);
 
+  // Efecto para cargar el horario del odontólogo seleccionado
+  useEffect(() => {
+    if (!selectedUserId) return;
+
+    const fetchScheduleConfig = async () => {
+      try {
+        const tenantInfo = JSON.parse(localStorage.getItem('tenant'));
+        const subdomain = tenantInfo?.subdominio;
+        if (!subdomain) return;
+
+        const config = await post('/public/listarConfiguracionHorarios', { subdomain, usuarioId: selectedUserId });
+        setScheduleConfig(config);
+
+        if (Array.isArray(config) && config.length > 0) {
+          let minStart = '23:59';
+          let maxEnd = '00:00';
+
+          config.forEach(day => {
+            if (day.isWorkingDay) {
+              if (day.morningStartTime && day.morningStartTime < minStart) minStart = day.morningStartTime;
+              const endOfDay = day.afternoonEndTime || day.morningEndTime;
+              if (endOfDay && endOfDay > maxEnd) maxEnd = endOfDay;
+            }
+          });
+
+          if (minStart <= maxEnd) {
+            const [startHour] = minStart.split(':');
+            const [endHour, endMinute] = maxEnd.split(':');
+            setWorkingHours({
+              start: new Date(new Date().setHours(parseInt(startHour, 10), 0, 0, 0)),
+              end: new Date(new Date().setHours(
+                parseInt(endMinute, 10) > 0 ? parseInt(endHour, 10) + 1 : parseInt(endHour, 10),
+                0, 0, 0
+              )),
+            });
+          }
+        }
+      } catch (err) {
+        toast.error('No se pudo cargar el horario del odontólogo.');
+      }
+    };
+    fetchScheduleConfig();
+  }, [selectedUserId, post]);
+
   // Esta función se dispara al hacer clic en una cita existente
   const handleSelectEvent = (event) => {
     console.log('event:', event.resource);
@@ -129,13 +176,40 @@ const Agenda = () => {
 
   // Esta función se dispara al seleccionar un rango de tiempo vacío en el calendario
   const handleSelectSlot = (slotInfo) => {
-    console.log('slotInfo:', slotInfo);
-    // Validamos que no se puedan crear citas en fechas u horas pasadas del día actual.
+    //console.log('slotInfo:', slotInfo);
+    // 1. Validamos que no se puedan crear citas en fechas u horas pasadas del día actual.
     if (isBefore(slotInfo.start, new Date())) {
       toast.error('No se pueden agendar citas en fechas u horas pasadas.');
       return; // No abre el modal
     }
-    // Abrimos el modal en modo creación, pasando la info del slot
+
+    // 2. Validamos contra el horario de trabajo del odontólogo.
+    console.log('scheduleConfig:', scheduleConfig);
+    const dayOfWeek = getDay(slotInfo.start); // Domingo = 0, Lunes = 1, etc.
+    const dayConfig = scheduleConfig.find(d => d.dayOfWeek === dayOfWeek);
+
+    if (!dayConfig || !dayConfig.isWorkingDay) {
+      toast.error('No se pueden agendar citas en un día no laborable.');
+      return;
+    }
+
+    // 3. Validamos que el slot esté dentro de los rangos de trabajo.
+    const slotTime = format(slotInfo.start, 'HH:mm');
+    console.log('slotTime:', slotTime);
+    console.log('dayConfig:', dayConfig);
+    const morningStart = dayConfig.morningStartTime?.substring(0, 5);
+    const morningEnd = dayConfig.morningEndTime?.substring(0, 5);
+    const afternoonStart = dayConfig.afternoonStartTime?.substring(0, 5);
+    const afternoonEnd = dayConfig.afternoonEndTime?.substring(0, 5);
+
+    const isWithinWorkingHours = (morningStart && morningEnd && slotTime >= morningStart && slotTime < morningEnd) || (afternoonStart && afternoonEnd && slotTime >= afternoonStart && slotTime < afternoonEnd);
+
+    if (!isWithinWorkingHours) {
+      toast.error('La hora seleccionada está fuera del horario laboral del odontólogo.');
+      return;
+    }
+
+    // 4. Si todo es válido, abrimos el modal en modo creación.
     setModalData({ slotInfo });
     setIsModalOpen(true);
   };
@@ -243,6 +317,11 @@ const Agenda = () => {
     }
   };
 
+  const filteredEvents = useMemo(() => {
+    if (!selectedUserId) return events;
+    return events.filter(event => event.resource?.usuarioId === selectedUserId);
+  }, [events, selectedUserId]);
+
   if (isListLoading) {
     return <LoadingSpinner />;
   }
@@ -252,15 +331,32 @@ const Agenda = () => {
   }
 
   return (
-    <div className="relative h-[calc(100vh-8rem)]">
+    <div>
+      <div className="mb-4 p-4 bg-white rounded-lg shadow-md">
+        <label htmlFor="user-select-agenda" className="block text-sm font-medium text-gray-700 mb-2">
+          Mostrando agenda para:
+        </label>
+        <select
+          id="user-select-agenda"
+          value={selectedUserId}
+          onChange={(e) => setSelectedUserId(e.target.value)}
+          className="block w-full max-w-xs p-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+          disabled={users.length === 0}
+        >
+          {users.map(user => (
+            <option key={user.id} value={user.id}>{`${user.nombre} ${user.apellido}`}</option>
+          ))}
+        </select>
+      </div>
+      <div className="relative h-[calc(100vh-14rem)]">
         <Calendar
           localizer={localizer}
-          events={events}
+          events={filteredEvents}
           startAccessor="start"
           endAccessor="end"
           style={{ height: '100%' }}
-          min={workDayStart} // Hora de inicio visible
-          max={workDayEnd}   // Hora de fin visible
+          min={workingHours.start} // Hora de inicio visible
+          max={workingHours.end}   // Hora de fin visible
           culture='es' // Le indicamos al calendario que use la cultura española
           onSelectEvent={handleSelectEvent}
           date={currentDate} // Controlamos la fecha del calendario
@@ -272,6 +368,9 @@ const Agenda = () => {
           step={15} // Cada slot representa 15 minutos
           timeslots={4} // Se mostrarán 4 slots por hora
           eventPropGetter={eventPropGetter} // Aplicamos nuestros estilos personalizados
+          formats={{
+            timeGutterFormat: 'HH:mm', // Formato para la columna de horas (ej: 09:00)
+          }}
           components={{
             event: CustomEvent,
           }}
@@ -299,6 +398,8 @@ const Agenda = () => {
           onDelete={handleDeleteAppointment}
           slotInfo={modalData?.slotInfo}
           eventToEdit={modalData?.eventToEdit}
+          selectedUserId={selectedUserId} // Pasamos el odontólogo seleccionado
+          scheduleConfig={scheduleConfig} // Pasamos la configuración de su horario
           patients={patients}
           users={users}
           events={events}
@@ -311,6 +412,7 @@ const Agenda = () => {
         title="Confirmar Eliminación de Cita"
         message={`¿Estás seguro de que deseas eliminar la cita para "${appointmentToDelete?.motivo}"? Esta acción no se puede deshacer.`}
       />
+      </div>
     </div>
   );
 };

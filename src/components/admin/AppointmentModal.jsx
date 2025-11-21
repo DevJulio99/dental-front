@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { useModalInteraction } from '../../hooks/useModalInteraction';
-import { parseISO, isToday, isAfter, isEqual, startOfDay } from 'date-fns';
 import { format } from 'date-fns-tz';
 import { useApi } from '../../hooks/useApi';
 import Select from 'react-select';
@@ -33,12 +32,22 @@ const customSelectStyles = {
     },
   }),
 };
-const AppointmentModal = ({ isOpen, onClose, onSave, onDelete, slotInfo, eventToEdit, patients, users, events }) => {
+
+const AppointmentModal = ({ 
+  isOpen, 
+  onClose, 
+  onSave, 
+  onDelete, 
+  slotInfo, 
+  eventToEdit, 
+  patients, 
+  users, 
+  events,
+  selectedUserId: agendaSelectedUserId,
+  scheduleConfig 
+}) => {
   const [formData, setFormData] = useState(emptyForm);
-  const [availableTimes, setAvailableTimes] = useState([]);
-  const [selectedTime, setSelectedTime] = useState('');
-  const [isLoadingTimes, setIsLoadingTimes] = useState(false);
-  const { isLoading: isSaving, get } = useApi(); // Renombramos isLoading a isSaving para claridad
+  const { isLoading: isSaving } = useApi(); // Ya no necesitamos 'get' aquí
   const modalRef = useModalInteraction(isOpen, onClose, isSaving);
   const isEditing = !!eventToEdit;
 
@@ -57,6 +66,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, onDelete, slotInfo, eventTo
   // para determinar el día que se debe filtrar.
   const activeDate = slotInfo?.start || (eventToEdit ? new Date(eventToEdit.fechaHora) : null);
 
+  // Efecto unificado para configurar el modal y generar los horarios disponibles
   useEffect(() => {
     if (isOpen) {
       if (eventToEdit) {
@@ -68,49 +78,12 @@ const AppointmentModal = ({ isOpen, onClose, onSave, onDelete, slotInfo, eventTo
           motivo: eventToEdit.motivo || '',
           observaciones: eventToEdit.observaciones || '',
         });
-      } else {
-        // Modo Crear: Reseteamos el formulario y los horarios
-        // Esto es crucial para que al abrir el modal para crear, no haya datos residuales.
-        setFormData(emptyForm);
-        setAvailableTimes([]);
-        setSelectedTime('');
+      } else if (slotInfo) {
+        // Modo Crear: Reseteamos el formulario y pre-seleccionamos datos
+        setFormData({ ...emptyForm, usuarioId: agendaSelectedUserId });
       }
     }
-  }, [isOpen, eventToEdit]); // Solo depende de si el modal se abre o cambia el evento a editar.
-
-  // Efecto para cargar los horarios disponibles
-  useEffect(() => {
-    if (isOpen && !isEditing && formData.usuarioId && activeDate) {
-      const fetchAvailableTimes = async () => {
-        setIsLoadingTimes(true);
-        setAvailableTimes([]); // Limpiamos horarios anteriores
-        setSelectedTime('');
-        try {
-          const date = format(activeDate, 'yyyy-MM-dd');
-          const tenantInfo = JSON.parse(localStorage.getItem('tenant'));
-          const subdomain = tenantInfo?.subdominio;
-
-          if (!subdomain) {
-            toast.error('No se pudo identificar el consultorio. No se pueden cargar los horarios.');
-            return;
-          }
-
-          const times = await get(`/public/horarios-disponibles?subdomain=${subdomain}&fecha=${date}&usuarioId=${formData.usuarioId}`);
-          if (Array.isArray(times)) {
-            setAvailableTimes(times);
-          }
-        } catch (err) {
-          toast.error(err.message || 'No se pudieron cargar los horarios.');
-        } finally {
-          setIsLoadingTimes(false);
-        }
-      };
-
-      fetchAvailableTimes();
-    }
-    // Si no hay odontólogo seleccionado, limpiamos la lista
-    if (!formData.usuarioId) setAvailableTimes([]);
-  }, [isOpen, isEditing, formData.usuarioId, activeDate, get]); // Depende de isEditing para no ejecutarse al editar.
+  }, [isOpen, isEditing, agendaSelectedUserId, activeDate, scheduleConfig, eventToEdit, slotInfo]);
 
   const handlePatientChange = (selectedOption) => {
     setFormData(prev => ({ ...prev, pacienteId: selectedOption ? selectedOption.value : '' }));
@@ -126,11 +99,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, onDelete, slotInfo, eventTo
     if (isEditing) {
       finalFechaHora = format(new Date(eventToEdit.fechaHora), "yyyy-MM-dd'T'HH:mm:ss");
     } else {
-      if (!selectedTime) {
-        toast.error('Debe seleccionar una hora para la cita.');
-        return;
-      }
-      finalFechaHora = selectedTime;
+      finalFechaHora = format(slotInfo.start, "yyyy-MM-dd'T'HH:mm:ss");
     }
 
     // Construimos el payload exacto que la API espera
@@ -153,38 +122,6 @@ const AppointmentModal = ({ isOpen, onClose, onSave, onDelete, slotInfo, eventTo
     const { id, value } = e.target;
     setFormData(prev => ({ ...prev, [id]: value }));
   };
-
-  const handleTimeSelectChange = (e) => {
-    const timeValue = e.target.value;
-    setSelectedTime(timeValue);
-  };
-
-  // Filtramos los horarios para el día de hoy, para mostrar solo los futuros.
-  const isSelectedDateToday = activeDate ? isToday(activeDate) : false;
-  
-  // Obtenemos los horarios ya ocupados para el odontólogo y fecha seleccionados
-  const bookedTimes = events
-    .filter(event => 
-      event.resource.usuarioId === formData.usuarioId && 
-      (!isEditing || event.id !== eventToEdit.id) &&
-      // Comparamos solo el día, mes y año, ignorando la zona horaria.
-      (activeDate && isEqual(startOfDay(new Date(event.start)), startOfDay(activeDate)))
-    )
-    // **CORREGIDO**: Forzamos la interpretación de la hora como UTC para evitar conversiones de zona horaria.
-    // Esto asegura que "12:00" se compare con "12:00", sin importar la zona horaria del navegador.
-    .map(event => format(new Date(event.start), 'HH:mm:ss', { timeZone: 'UTC' }));
-  const filteredTimes = availableTimes.filter(timeString => {
-    // **CORREGIDO**: Hacemos lo mismo para los horarios disponibles, los tratamos como UTC.
-    const availableTimePart = format(parseISO(timeString), 'HH:mm:ss', { timeZone: 'UTC' });
-
-    // 1. Filtro para no mostrar horarios pasados en el día de hoy.
-    if (isSelectedDateToday && !isAfter(parseISO(timeString), new Date())) {
-      return false;
-    }
-
-    // 2. Filtro para no mostrar horarios ya ocupados.
-    return !bookedTimes.includes(availableTimePart);
-  });
 
   if (!isOpen) {
     return null;
@@ -214,28 +151,6 @@ const AppointmentModal = ({ isOpen, onClose, onSave, onDelete, slotInfo, eventTo
               />
             </div>
             <div>
-              <label htmlFor="usuarioId" className="block text-sm font-medium text-gray-700">Odontólogo</label>
-              <select id="usuarioId" value={formData.usuarioId} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
-                <option value="" disabled>Seleccione un odontólogo</option>
-                {users.map(u => <option key={u.id} value={u.id}>{`${u.nombre} ${u.apellido}`}</option>)}
-              </select>
-            </div>
-            {!isEditing && (
-              <div>
-                <label htmlFor="horaCita" className="block text-sm font-medium text-gray-700">Hora de la Cita</label>
-                <select id="horaCita" value={selectedTime} onChange={handleTimeSelectChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required disabled={isLoadingTimes || availableTimes.length === 0}>
-                  <option value="" disabled>
-                    {isLoadingTimes ? 'Cargando horarios...' : (formData.usuarioId ? 'Seleccione una hora' : 'Seleccione un odontólogo primero')}
-                  </option>
-                  {filteredTimes.map(time => (
-                    <option key={time} value={time}>
-                      {format(parseISO(time), 'HH:mm')}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-            <div>
               <label htmlFor="motivo" className="block text-sm font-medium text-gray-700">Motivo de la Cita</label>
               <input type="text" id="motivo" value={formData.motivo} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required />
             </div>
@@ -249,7 +164,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, onDelete, slotInfo, eventTo
               <button type="button" onClick={() => onDelete(eventToEdit)} disabled={isSaving} className="px-4 py-2 text-sm font-medium text-white bg-error rounded-md hover:bg-red-700 disabled:opacity-50 mr-auto">Eliminar Cita</button>
             )}
             <button type="button" onClick={onClose} disabled={isSaving} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50">Cancelar</button>
-            <button type="submit" disabled={isSaving || isLoadingTimes} className="px-4 py-2 text-sm font-medium text-white rounded-md bg-primary hover:bg-blue-600 disabled:bg-gray-400">
+            <button type="submit" disabled={isSaving} className="px-4 py-2 text-sm font-medium text-white rounded-md bg-primary hover:bg-blue-600 disabled:bg-gray-400">
               {isSaving ? 'Guardando...' : 'Agendar Cita'}
             </button>
           </div>
