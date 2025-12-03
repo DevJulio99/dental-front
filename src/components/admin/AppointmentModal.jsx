@@ -1,9 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { useModalInteraction } from '../../hooks/useModalInteraction';
-import { format } from 'date-fns-tz';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { useApi } from '../../hooks/useApi';
 import Select from 'react-select';
+
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DesktopTimePicker, renderTimeViewClock } from '@mui/x-date-pickers';
+import { esES } from '@mui/x-date-pickers/locales';
 
 const getEmptyForm = () => ({
   pacienteId: '',
@@ -47,6 +53,7 @@ const AppointmentModal = ({
   scheduleConfig 
 }) => {
   const [formData, setFormData] = useState(getEmptyForm());
+  const [appointmentTime, setAppointmentTime] = useState(null); // Estado para la hora de la cita
   const { isLoading: isSaving } = useApi(); // Ya no necesitamos 'get' aquí
   const modalRef = useModalInteraction(isOpen, onClose, isSaving);
   const isEditing = !!eventToEdit;
@@ -78,11 +85,14 @@ const AppointmentModal = ({
           motivo: eventToEdit.motivo || '',
           observaciones: eventToEdit.observaciones || '',
         });
+        setAppointmentTime(new Date(eventToEdit.fechaHora));
       } else if (slotInfo) {
         // Modo Crear: Reseteamos el formulario y pre-seleccionamos datos
+        setAppointmentTime(slotInfo.start);
         setFormData({ ...getEmptyForm(), usuarioId: agendaSelectedUserId });
       }
     } else {
+      setAppointmentTime(null);
       setFormData(getEmptyForm());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -98,12 +108,17 @@ const AppointmentModal = ({
       return;
     }
 
-    let finalFechaHora;
-    if (isEditing) {
-      finalFechaHora = format(new Date(eventToEdit.fechaHora), "yyyy-MM-dd'T'HH:mm:ss");
-    } else {
-      finalFechaHora = format(slotInfo.start, "yyyy-MM-dd'T'HH:mm:ss");
+    if (appointmentTime) {
+      const selectedHour = appointmentTime.getHours();
+      const isWithinWorkingHours = selectedHour >= 9 && selectedHour < 18;
+
+      if (!isWithinWorkingHours) {
+        toast.error('La hora de la cita debe estar entre las 9:00 AM y las 6:00 PM.');
+        return;
+      }
     }
+
+    const finalFechaHora = format(appointmentTime, "yyyy-MM-dd'T'HH:mm:ss");
 
     // Construimos el payload exacto que la API espera
     const payload = {
@@ -126,18 +141,32 @@ const AppointmentModal = ({
     setFormData(prev => ({ ...prev, [id]: value }));
   };
 
+  const handleTimeChange = (newDate) => setAppointmentTime(newDate);
+
+  const modalTitle = useMemo(() => {
+    if (isEditing) {
+      return 'Editar Cita';
+    }
+    if (appointmentTime) {
+      const formattedTime = format(appointmentTime, 'h:mm a', { locale: es });
+      return `Nueva Cita a las: ${formattedTime}`;
+    }
+    return 'Crear Nueva Cita';
+  }, [isEditing, appointmentTime]);
+
   if (!isOpen) {
     return null;
   }
 
   return (
     <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="w-full max-w-lg p-6 bg-white rounded-lg shadow-xl">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">{eventToEdit ? 'Editar Cita' : 'Crear Nueva Cita'}</h2>
+      <div className="w-full max-w-lg bg-white rounded-lg shadow-xl max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <h2 className="text-xl font-bold text-gray-900">{modalTitle}</h2>
           <button onClick={onClose} disabled={isSaving} className="text-gray-400 hover:text-gray-600 text-2xl leading-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 rounded">&times;</button>
         </div>
-        <form onSubmit={handleSubmit}>
+        <div className="p-6 overflow-y-auto">
+          <form id="appointment-form" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
               <label htmlFor="pacienteId" className="block text-sm font-medium text-gray-800">Paciente</label>
@@ -153,6 +182,37 @@ const AppointmentModal = ({
                 required
               />
             </div>
+            {(slotInfo || isEditing) && (
+              <div>
+                <label htmlFor="appointment-time" className="block text-sm font-medium text-gray-800">Hora de la Cita</label>
+                <LocalizationProvider 
+                  dateAdapter={AdapterDateFns} 
+                  adapterLocale={es}
+                  localeText={esES.components.MuiLocalizationProvider.defaultProps.localeText}
+                >
+                  <DesktopTimePicker
+                    value={appointmentTime}
+                    onChange={handleTimeChange}
+                    minutesStep={5} // Puedes ajustar el paso de los minutos
+                    ampm={true}
+                    className="w-full mt-1"
+                    slotProps={{
+                      textField: { 
+                        id: 'appointment-time', 
+                        className: 'w-full', 
+                        variant: 'outlined', 
+                        size: 'small' 
+                      }
+                    }}
+                    viewRenderers={{
+                      hours: renderTimeViewClock,
+                      minutes: renderTimeViewClock,
+                      seconds: renderTimeViewClock,
+                    }}
+                  />
+                </LocalizationProvider>
+              </div>
+            )}
             <div>
               <label htmlFor="motivo" className="block text-sm font-medium text-gray-800">Motivo de la Cita</label>
               <input type="text" id="motivo" value={formData.motivo} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required />
@@ -162,23 +222,24 @@ const AppointmentModal = ({
               <textarea id="observaciones" value={formData.observaciones || ''} onChange={handleInputChange} rows="3" className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
             </div>
           </div>
-          <div className="flex justify-end mt-6 space-x-3">
-            {isEditing && (
-              <button 
-                type="button" 
-                onClick={() => onDelete(eventToEdit)} 
-                disabled={isSaving} 
-                className="px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 active:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:border-gray-200 mr-auto transition-all duration-200"
-              >
-                Eliminar Cita
-              </button>
-            )}
-            <button type="button" onClick={onClose} disabled={isSaving} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50">Cancelar</button>
-            <button type="submit" disabled={isSaving} className="px-4 py-2 text-sm font-medium text-blue-50 rounded-md bg-primary hover:bg-hover-btn-primary font-semibold hover:text-white disabled:bg-gray-400">
-              {isSaving ? 'Guardando...' : 'Agendar Cita'}
-            </button>
-          </div>
         </form>
+        </div>
+        <div className="flex justify-end p-6 space-x-3 border-t border-gray-200">
+          {isEditing && (
+            <button 
+              type="button" 
+              onClick={() => onDelete(eventToEdit)} 
+              disabled={isSaving} 
+              className="px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 active:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:border-gray-200 mr-auto transition-all duration-200"
+            >
+              Eliminar Cita
+            </button>
+          )}
+          <button type="button" onClick={onClose} disabled={isSaving} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50">Cancelar</button>
+          <button type="submit" form="appointment-form" disabled={isSaving} className="px-4 py-2 text-sm font-medium text-blue-50 rounded-md bg-primary hover:bg-hover-btn-primary font-semibold hover:text-white disabled:bg-gray-400">
+            {isSaving ? 'Guardando...' : 'Agendar Cita'}
+          </button>
+        </div>
       </div>
     </div>
   );
