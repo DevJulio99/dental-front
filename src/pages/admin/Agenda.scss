@@ -96,3 +96,12 @@
 .rbc-today {
   background-color: $primary-50;
 }
+
+.rbc-time-header-content {
+  .rbc-allday-cell {
+    display: none;
+  }
+  .rbc-header {
+    border-bottom: none;
+  }
+}
