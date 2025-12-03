@@ -114,24 +114,24 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
         <div className="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-50 backdrop-blur-sm" onClick={onClose}></div>
 
         <div className="relative bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:max-w-4xl w-full flex flex-col max-h-[90vh]">
-          <div className="bg-gradient-to-r from-blue-check to-primary px-6 pt-6 pb-4 flex-shrink-0">
+          <div className="bg-gradient-to-r from-primary-400 to-primary-600 px-6 pt-6 pb-4 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg">
-                  <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-6 h-6 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-blue-50">
+                  <h3 className="text-xl font-bold text-white">
                     {toothName} ({toothNumber})
                   </h3>
-                  <p className="text-sm text-blue-50">Historial y Detalles</p>
+                  <p className="text-sm text-primary-100">Historial y Detalles</p>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="text-white hover:text-gray-200 focus:outline-none p-2 hover:bg-white/20 rounded-lg transition-colors"
+                className="text-white hover:text-white focus:outline-none p-2 hover:bg-white/30 rounded-lg transition-colors duration-200 focus:ring-2 focus:ring-white/70 active:bg-white/40"
               >
                 <span className="sr-only">Cerrar</span>
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -144,23 +144,23 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
           <div className="bg-white px-6 pt-6 pb-4 overflow-y-auto">
 
             {/* Formulario para agregar nuevo registro mejorado */}
-            <div className="mb-6 p-5 bg-gradient-to-br from-gray-50 to-primary rounded-xl border-2 border-gray-200 shadow-sm">
+            <div className="mb-6 p-5 bg-gradient-to-br from-gray-50 to-primary-50 rounded-xl border-2 border-primary-200 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
-                <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                <h4 className="text-base font-bold text-gray-800">Agregar Nuevo Registro</h4>
+                <h4 className="text-base font-bold text-gray-900">Agregar Nuevo Registro</h4>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-800 mb-1">
                     Estado
                   </label>
                   <select
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   >
                     {statusOptions.map(opt => (
                       <option key={opt.id} value={opt.id}>{opt.label}</option>
@@ -169,7 +169,7 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-800 mb-1">
                     Fecha de Registro
                   </label>
                   <input
@@ -177,7 +177,7 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
                     value={fechaRegistro}
                     onChange={(e) => setFechaRegistro(e.target.value)}
                     max={new Date().toISOString().split('T')[0]}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
               </div>
@@ -200,7 +200,7 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
               <button
                 onClick={handleSave}
                 disabled={isLoading}
-                className="w-full px-4 py-3 bg-button-primary text-blue-50 rounded-lg hover:bg-hover-btn-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                className="w-full px-4 py-2.5 text-sm font-semibold text-white rounded-lg bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 active:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center gap-2"
               >
                 {isLoading ? (
                   <>
@@ -227,7 +227,7 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
                 <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <h4 className="text-base font-bold text-gray-800">Historial de Cambios</h4>
+                <h4 className="text-base font-bold text-gray-900">Historial de Cambios</h4>
               </div>
               {loadingHistorial ? (
                 <LoadingSpinner />
@@ -285,7 +285,7 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
             <button
               type="button"
               onClick={onClose}
-              className="w-full inline-flex justify-center items-center gap-2 rounded-lg border border-transparent shadow-md px-6 py-3 bg-gray-600 text-base font-semibold text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200 sm:ml-3 sm:w-auto sm:text-sm"
+              className="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-lg bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 active:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-200 shadow-sm hover:shadow-md sm:ml-3 sm:w-auto"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

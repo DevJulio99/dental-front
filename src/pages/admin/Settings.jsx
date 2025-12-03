@@ -263,17 +263,17 @@ const Settings = () => {
 
   return ( // El spinner se mostrará aquí si isLoading es true
     <div>
-      <h1 className="text-2xl font-bold text-blue-50 mb-6">Configuración de Horarios</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">Configuración de Horarios</h1>
       
-      <div className="mb-6 p-4 bg-white rounded-lg shadow-md">
-        <label htmlFor="user-select" className="block text-sm font-medium text-gray-700 mb-2">
+      <div className="mb-6 p-4 bg-white rounded-xl shadow-soft">
+        <label htmlFor="user-select" className="block text-sm font-semibold text-gray-800 mb-2">
           Configurando horario para:
         </label>
         <select
           id="user-select"
           value={selectedUserId}
           onChange={(e) => setSelectedUserId(e.target.value)}
-          className="block w-full max-w-xs p-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+          className="block w-full max-w-xs px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
           disabled={users.length === 0}
         >
           {users.map(user => (
@@ -284,8 +284,8 @@ const Settings = () => {
 
       {isLoading ? (
         <LoadingSpinner />
-      ) : (<div key={selectedUserId} className="p-6 bg-white rounded-lg shadow-md transition-opacity duration-300">
-        <h2 className="text-xl font-semibold text-gray-700 mb-4">Horario Semanal Laborable</h2>
+      ) : (<div key={selectedUserId} className="p-6 bg-white rounded-xl shadow-soft transition-opacity duration-300">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Horario Semanal Laborable</h2>
         <div className="space-y-4">
           {Object.keys(schedule).map(day => (
             <div key={day} className="border rounded-md overflow-hidden">
@@ -397,14 +397,20 @@ const Settings = () => {
           ))}
         </div>
         <div className="flex justify-end mt-6">
-          <button onClick={handleSaveChanges} disabled={isLoading} className="px-6 py-2 font-bold text-white rounded-md bg-primary hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed">{isLoading ? 'Guardando...' : 'Guardar Cambios'}</button>
+          <button 
+            onClick={handleSaveChanges} 
+            disabled={isLoading} 
+            className="px-4 py-2.5 text-sm font-semibold text-white rounded-lg bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 active:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-200 shadow-sm hover:shadow-md"
+          >
+            {isLoading ? 'Guardando...' : 'Guardar Cambios'}
+          </button>
         </div>
       </div>)}
       {/* Modal para Copiar Horario */}
       {copySourceDay && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-            <h3 className="text-lg font-bold mb-4">Copiar horario de {dayNames[copySourceDay]}</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+          <div className="bg-white p-6 rounded-xl shadow-large w-full max-w-md">
+            <h3 className="text-lg font-bold text-primary-700 mb-4">Copiar horario de {dayNames[copySourceDay]}</h3>
             <p className="mb-4 text-sm text-gray-600">Selecciona los días a los que deseas aplicar esta configuración de horario.</p>
             <div className="text-right mb-2">
               <button
@@ -415,7 +421,11 @@ const Settings = () => {
                   } else {
                     setTargetCopyDays(allOtherDays); // Seleccionar todos
                   }
-                }} className="text-sm font-medium text-primary hover:underline">Seleccionar/Deseleccionar todos</button>
+                }} 
+                className="text-sm font-medium text-primary-500 hover:text-primary-600 hover:underline"
+              >
+                Seleccionar/Deseleccionar todos
+              </button>
             </div>
             <div className="space-y-2">
               {Object.keys(dayNames).filter(d => d !== copySourceDay).map(dayKey => (
@@ -431,20 +441,24 @@ const Settings = () => {
                         setTargetCopyDays(prev => prev.filter(d => d !== dayKey));
                       }
                     }}
-                    className="w-4 h-4 text-primary rounded focus:ring-primary"
+                    className="w-4 h-4 text-primary-500 rounded focus:ring-primary-500"
                   />
                   <label htmlFor={`copy-check-${dayKey}`} className="ml-2 text-gray-700">{dayNames[dayKey]}</label>
                 </div>
               ))}
             </div>
             <div className="flex justify-end mt-6 space-x-3">
-              <button onClick={() => setCopySourceDay(null)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300">
+              <button 
+                onClick={() => setCopySourceDay(null)} 
+                className="px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 active:bg-gray-100 transition-all duration-200"
+              >
                 Cancelar
               </button>
               <button
                 onClick={handleCopySchedule}
                 disabled={targetCopyDays.length === 0}
-                className="px-4 py-2 text-sm font-medium text-white rounded-md bg-primary hover:bg-blue-600 disabled:bg-gray-400">
+                className="px-4 py-2.5 text-sm font-semibold text-white rounded-lg bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 active:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-200 shadow-sm hover:shadow-md"
+              >
                 Aplicar
               </button>
             </div>

@@ -1,12 +1,13 @@
 
-
 const Dashboard = () => {
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold text-blue-50">Dashboard</h1>
-      <p className="mt-2 text-blue-50">
-        Bienvenido al panel de administración de tu consultorio.
-      </p>
+    <div className="space-y-6">
+      <div className="bg-white rounded-xl shadow-soft p-6">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+        <p className="text-gray-600">
+          Bienvenido al panel de administración de tu consultorio dental.
+        </p>
+      </div>
     </div>
   );
 };

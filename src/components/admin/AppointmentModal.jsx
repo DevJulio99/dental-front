@@ -131,13 +131,13 @@ const AppointmentModal = ({
     <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="w-full max-w-lg p-6 bg-white rounded-lg shadow-xl">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">{eventToEdit ? 'Editar Cita' : 'Crear Nueva Cita'}</h2>
-          <button onClick={onClose} disabled={isSaving} className="text-gray-500 hover:text-gray-800 text-2xl leading-none disabled:opacity-50 disabled:cursor-not-allowed">&times;</button>
+          <h2 className="text-xl font-bold text-gray-900">{eventToEdit ? 'Editar Cita' : 'Crear Nueva Cita'}</h2>
+          <button onClick={onClose} disabled={isSaving} className="text-gray-400 hover:text-gray-600 text-2xl leading-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 rounded">&times;</button>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="pacienteId" className="block text-sm font-medium text-gray-700">Paciente</label>
+              <label htmlFor="pacienteId" className="block text-sm font-medium text-gray-800">Paciente</label>
               <Select
                 id="pacienteId"
                 options={patientOptions}
@@ -151,20 +151,38 @@ const AppointmentModal = ({
               />
             </div>
             <div>
-              <label htmlFor="motivo" className="block text-sm font-medium text-gray-700">Motivo de la Cita</label>
+              <label htmlFor="motivo" className="block text-sm font-medium text-gray-800">Motivo de la Cita</label>
               <input type="text" id="motivo" value={formData.motivo} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required />
             </div>
             <div>
-              <label htmlFor="observaciones" className="block text-sm font-medium text-gray-700">Observaciones</label>
+              <label htmlFor="observaciones" className="block text-sm font-medium text-gray-800">Observaciones</label>
               <textarea id="observaciones" value={formData.observaciones || ''} onChange={handleInputChange} rows="3" className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
             </div>
           </div>
-          <div className="flex justify-end mt-6 space-x-2">
+          <div className="flex justify-end mt-6 space-x-3">
             {isEditing && (
-              <button type="button" onClick={() => onDelete(eventToEdit)} disabled={isSaving} className="px-4 py-2 text-sm font-medium text-white bg-error rounded-md hover:bg-red-700 disabled:opacity-50 mr-auto">Eliminar Cita</button>
+              <button 
+                type="button" 
+                onClick={() => onDelete(eventToEdit)} 
+                disabled={isSaving} 
+                className="px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 active:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:border-gray-200 mr-auto transition-all duration-200"
+              >
+                Eliminar Cita
+              </button>
             )}
-            <button type="button" onClick={onClose} disabled={isSaving} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50">Cancelar</button>
-            <button type="submit" disabled={isSaving} className="px-4 py-2 text-sm font-medium text-white rounded-md bg-primary hover:bg-blue-600 disabled:bg-gray-400">
+            <button 
+              type="button" 
+              onClick={onClose} 
+              disabled={isSaving} 
+              className="px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 active:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:border-gray-200 transition-all duration-200"
+            >
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              disabled={isSaving} 
+              className="px-4 py-2.5 text-sm font-semibold text-white rounded-lg bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 active:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-200 shadow-sm hover:shadow-md"
+            >
               {isSaving ? 'Guardando...' : 'Agendar Cita'}
             </button>
           </div>

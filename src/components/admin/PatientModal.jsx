@@ -74,30 +74,42 @@ const PatientModal = ({ isOpen, onClose, patientToEdit, onSave, isSaving }) => {
     <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
       <div className="w-full max-w-lg bg-white rounded-lg shadow-xl flex flex-col max-h-[95vh]">
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-bold">{isEditing ? 'Editar Paciente' : 'Agregar Nuevo Paciente'}</h2>
-          <button onClick={onClose} disabled={isSaving} className="text-gray-500 hover:text-gray-800 text-2xl leading-none disabled:opacity-50 disabled:cursor-not-allowed">&times;</button>
+          <h2 className="text-xl font-bold text-gray-900">{isEditing ? 'Editar Paciente' : 'Agregar Nuevo Paciente'}</h2>
+          <button onClick={onClose} disabled={isSaving} className="text-gray-400 hover:text-gray-600 text-2xl leading-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 rounded">&times;</button>
         </div>
         <form id="patient-form" onSubmit={handleSubmit} className="flex-grow overflow-y-auto">
           <div className="p-6 space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div><label htmlFor="firstName" className="block text-sm font-medium text-gray-700">Nombres</label><input type="text" id="firstName" value={formData.firstName} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required/></div>
-              <div><label htmlFor="lastName" className="block text-sm font-medium text-gray-700">Apellidos</label><input type="text" id="lastName" value={formData.lastName} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required/></div>
+              <div><label htmlFor="firstName" className="block text-sm font-medium text-gray-800">Nombres</label><input type="text" id="firstName" value={formData.firstName} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required/></div>
+              <div><label htmlFor="lastName" className="block text-sm font-medium text-gray-800">Apellidos</label><input type="text" id="lastName" value={formData.lastName} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required/></div>
             </div>
-            <div><label htmlFor="dniPasaporte" className="block text-sm font-medium text-gray-700">DNI / Pasaporte</label><input type="text" id="dniPasaporte" value={formData.dniPasaporte} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required/></div>
+            <div><label htmlFor="dniPasaporte" className="block text-sm font-medium text-gray-800">DNI / Pasaporte</label><input type="text" id="dniPasaporte" value={formData.dniPasaporte} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required/></div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div><label htmlFor="fechaNacimiento" className="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label><input type="date" id="fechaNacimiento" value={formData.fechaNacimiento} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required/></div>
-              <div><label htmlFor="genero" className="block text-sm font-medium text-gray-700">Género</label><select id="genero" value={formData.genero} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required><option value="Masculino">Masculino</option><option value="Femenino">Femenino</option></select></div>
+              <div><label htmlFor="fechaNacimiento" className="block text-sm font-medium text-gray-800">Fecha de Nacimiento</label><input type="date" id="fechaNacimiento" value={formData.fechaNacimiento} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required/></div>
+              <div><label htmlFor="genero" className="block text-sm font-medium text-gray-800">Género</label><select id="genero" value={formData.genero} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required><option value="Masculino">Masculino</option><option value="Femenino">Femenino</option></select></div>
             </div>
-            <div><label htmlFor="telefono" className="block text-sm font-medium text-gray-700">Teléfono</label><input type="tel" id="telefono" value={formData.telefono} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required/></div>
-            <div><label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label><input type="email" id="email" value={formData.email} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-primary"/></div>
-            <div><label htmlFor="direccion" className="block text-sm font-medium text-gray-700">Dirección</label><input type="text" id="direccion" value={formData.direccion} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"/></div>
-            <div><label htmlFor="alergias" className="block text-sm font-medium text-gray-700">Alergias</label><textarea id="alergias" value={formData.alergias} onChange={handleInputChange} rows="2" className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"></textarea></div>
-            <div><label htmlFor="observaciones" className="block text-sm font-medium text-gray-700">Observaciones</label><textarea id="observaciones" value={formData.observaciones} onChange={handleInputChange} rows="2" className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"></textarea></div>
+            <div><label htmlFor="telefono" className="block text-sm font-medium text-gray-800">Teléfono</label><input type="tel" id="telefono" value={formData.telefono} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required/></div>
+            <div><label htmlFor="email" className="block text-sm font-medium text-gray-800">Email</label><input type="email" id="email" value={formData.email} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-primary"/></div>
+            <div><label htmlFor="direccion" className="block text-sm font-medium text-gray-800">Dirección</label><input type="text" id="direccion" value={formData.direccion} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"/></div>
+            <div><label htmlFor="alergias" className="block text-sm font-medium text-gray-800">Alergias</label><textarea id="alergias" value={formData.alergias} onChange={handleInputChange} rows="2" className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"></textarea></div>
+            <div><label htmlFor="observaciones" className="block text-sm font-medium text-gray-800">Observaciones</label><textarea id="observaciones" value={formData.observaciones} onChange={handleInputChange} rows="2" className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"></textarea></div>
           </div>
         </form>
-        <div className="flex justify-end p-6 space-x-2 border-t">
-            <button type="button" onClick={onClose} disabled={isSaving} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50">Cancelar</button>
-            <button type="submit" form="patient-form" disabled={isSaving} className="px-4 py-2 text-sm font-medium text-white rounded-md bg-primary hover:bg-blue-600 disabled:bg-gray-400">
+        <div className="flex justify-end p-6 space-x-3 border-t border-gray-200">
+            <button 
+              type="button" 
+              onClick={onClose} 
+              disabled={isSaving} 
+              className="px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 active:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:border-gray-200 transition-all duration-200"
+            >
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              form="patient-form" 
+              disabled={isSaving} 
+              className="px-4 py-2.5 text-sm font-semibold text-white rounded-lg bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 active:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-200 shadow-sm hover:shadow-md"
+            >
               {isSaving ? 'Guardando...' : 'Guardar Paciente'}
             </button>
           </div>

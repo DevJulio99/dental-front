@@ -45,7 +45,10 @@ const PatientDetail = () => {
           </svg>
         </div>
         <p className="text-red-600 mb-4">{error || 'Paciente no encontrado'}</p>
-        <Link to="/pacientes" className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors">
+        <Link 
+          to="/pacientes" 
+          className="px-4 py-2.5 text-sm font-semibold text-white rounded-lg bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 active:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-200 shadow-sm hover:shadow-md"
+        >
           Volver a la lista de pacientes
         </Link>
       </div>

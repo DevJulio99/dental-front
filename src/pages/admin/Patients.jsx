@@ -96,8 +96,11 @@ const Patients = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-blue-50">Gestión de Pacientes</h1>
-        <button onClick={handleOpenCreateModal} className="flex items-center px-4 py-2 font-bold text-white transition-colors duration-200 transform rounded-xl bg-button-primary hover:bg-hover-btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+        <h1 className="text-3xl font-bold text-gray-900">Gestión de Pacientes</h1>
+        <button 
+          onClick={handleOpenCreateModal} 
+          className="flex items-center px-4 py-2.5 text-sm font-semibold text-white rounded-lg bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 active:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-200 shadow-sm hover:shadow-md"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
           </svg>
@@ -105,39 +108,51 @@ const Patients = () => {
         </button>
       </div>
 
-      <div className="overflow-x-auto bg-white rounded-lg shadow-[0_2px_16px_rgba(0,0,0,0.05)]">
-        <table className="w-full text-sm text-left text-gray-500">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+      <div className="overflow-x-auto bg-white rounded-xl shadow-soft">
+        <table className="w-full text-sm text-left text-gray-600">
+          <thead className="text-xs font-semibold text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
             <tr>
-              <th scope="col" className="px-6 py-3">Nombre Completo</th>
-              <th scope="col" className="px-6 py-3">DNI / Pasaporte</th>
-              <th scope="col" className="px-6 py-3">Teléfono</th>
-              <th scope="col" className="px-6 py-3">Próxima Cita</th>
-              <th scope="col" className="px-6 py-3 text-right">Acciones</th>
+              <th scope="col" className="px-6 py-4">Nombre Completo</th>
+              <th scope="col" className="px-6 py-4">DNI / Pasaporte</th>
+              <th scope="col" className="px-6 py-4">Teléfono</th>
+              <th scope="col" className="px-6 py-4">Próxima Cita</th>
+              <th scope="col" className="px-6 py-4 text-right">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {isListLoading && <tr><td colSpan="5" className="text-center p-4"><LoadingSpinner /></td></tr>}
-            {listError && !isListLoading && <tr><td colSpan="5" className="text-center p-4 text-red-500">{listError}</td></tr>}
+            {isListLoading && <tr><td colSpan="5" className="text-center p-8"><LoadingSpinner /></td></tr>}
+            {listError && !isListLoading && <tr><td colSpan="5" className="text-center p-8 text-error-600 font-medium">{listError}</td></tr>}
             {!isListLoading && !listError && patients.map((patient) => (
-              <tr key={patient.id} className="bg-white border-b hover:bg-gray-50">
-                <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+              <tr key={patient.id} className="bg-white border-b border-gray-100 hover:bg-primary-50 transition-colors duration-150">
+                <th scope="row" className="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">
                   {patient.nombreCompleto}
                 </th>
-                <td className="px-6 py-4">{patient.dniPasaporte}</td>
-                <td className="px-6 py-4">{patient.telefono}</td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 text-gray-600">{patient.dniPasaporte}</td>
+                <td className="px-6 py-4 text-gray-600">{patient.telefono}</td>
+                <td className="px-6 py-4 text-gray-600">
                   {patient.fechaUltimaCita ? format(new Date(patient.fechaUltimaCita), 'dd/MM/yyyy HH:mm') : <span className="text-gray-400">Ninguna</span>}
                 </td>
                 <td className="px-6 py-4 space-x-2 text-right">
-                  <Link to={`/pacientes/${patient.id}`} className="inline-flex items-center p-2 text-sm font-medium text-center text-white rounded-lg bg-button-primary hover:bg-hover-btn-primary focus:ring-4 focus:outline-none focus:ring-blue-300" title="Ver Ficha">
-                    <FileUserIcon className="w-4 h-4 text-white" />
+                  <Link 
+                    to={`/pacientes/${patient.id}`} 
+                    className="inline-flex items-center justify-center p-2.5 text-sm font-medium text-primary-600 bg-white border border-primary-300 rounded-lg hover:bg-primary-50 hover:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 active:bg-primary-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200" 
+                    title="Ver odontograma"
+                  >
+                    <FileUserIcon className="w-4 h-4" />
                   </Link>
-                  <button onClick={() => handleOpenEditModal(patient)} className="inline-flex items-center p-2 text-sm font-medium text-center text-white bg-button-primary hover:bg-hover-btn-primary rounded-lg focus:ring-4 focus:outline-none focus:ring-yellow-300" title="Editar">
-                    <EditIcon className="w-4 h-4 text-white" />
+                  <button 
+                    onClick={() => handleOpenEditModal(patient)} 
+                    className="inline-flex items-center justify-center p-2.5 text-sm font-medium text-primary-600 bg-white border border-primary-300 rounded-lg hover:bg-primary-50 hover:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 active:bg-primary-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200" 
+                    title="Editar"
+                  >
+                    <EditIcon className="w-4 h-4" />
                   </button>
-                  <button onClick={() => handleOpenDeleteModal(patient)} className="inline-flex items-center p-2 text-sm font-medium text-center text-white rounded-lg bg-button-primary hover:bg-hover-btn-primary focus:ring-4 focus:outline-none focus:ring-red-300" title="Eliminar">
-                    <TrashIcon className="w-4 h-4 text-white" />
+                  <button 
+                    onClick={() => handleOpenDeleteModal(patient)} 
+                    className="inline-flex items-center justify-center p-2.5 text-sm font-medium text-primary-600 bg-white border border-primary-300 rounded-lg hover:bg-primary-50 hover:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 active:bg-primary-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200" 
+                    title="Eliminar"
+                  >
+                    <TrashIcon className="w-4 h-4" />
                   </button>
                 </td>
               </tr>

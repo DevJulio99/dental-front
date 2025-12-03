@@ -61,22 +61,33 @@ const UserModal = ({ isOpen, onClose, userToEdit, onSave, isSaving }) => {
     <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="w-full max-w-lg p-6 bg-white rounded-lg shadow-xl">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">{isEditing ? 'Editar Usuario' : 'Agregar Nuevo Usuario'}</h2>
-          <button onClick={onClose} disabled={isSaving} className="text-gray-500 hover:text-gray-800 text-2xl leading-none disabled:opacity-50 disabled:cursor-not-allowed">&times;</button>
+          <h2 className="text-xl font-bold text-gray-900">{isEditing ? 'Editar Usuario' : 'Agregar Nuevo Usuario'}</h2>
+          <button onClick={onClose} disabled={isSaving} className="text-gray-400 hover:text-gray-600 text-2xl leading-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 rounded">&times;</button>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div><label htmlFor="nombre" className="block text-sm font-medium text-gray-700">Nombres</label><input type="text" id="nombre" value={formData.nombre} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required /></div>
-              <div><label htmlFor="apellido" className="block text-sm font-medium text-gray-700">Apellidos</label><input type="text" id="apellido" value={formData.apellido} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required /></div>
+              <div><label htmlFor="nombre" className="block text-sm font-medium text-gray-800">Nombres</label><input type="text" id="nombre" value={formData.nombre} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required /></div>
+              <div><label htmlFor="apellido" className="block text-sm font-medium text-gray-800">Apellidos</label><input type="text" id="apellido" value={formData.apellido} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required /></div>
             </div>
-            <div><label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label><input type="email" id="email" value={formData.email} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required /></div>
-            <div><label htmlFor="password" className="block text-sm font-medium text-gray-700">Contraseña</label><input type="password" id="password" value={formData.password} onChange={handleInputChange} placeholder={isEditing ? 'Dejar en blanco para no cambiar' : ''} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required={!isEditing} /></div>
-            <div><label htmlFor="rol" className="block text-sm font-medium text-gray-700">Rol</label><select id="rol" value={formData.rol} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"><option disabled>Seleccione un rol</option>{roleOptions.map(role => (<option key={role} value={role}>{role}</option>))}</select></div>
+            <div><label htmlFor="email" className="block text-sm font-medium text-gray-800">Email</label><input type="email" id="email" value={formData.email} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required /></div>
+            <div><label htmlFor="password" className="block text-sm font-medium text-gray-800">Contraseña</label><input type="password" id="password" value={formData.password} onChange={handleInputChange} placeholder={isEditing ? 'Dejar en blanco para no cambiar' : ''} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required={!isEditing} /></div>
+            <div><label htmlFor="rol" className="block text-sm font-medium text-gray-800">Rol</label><select id="rol" value={formData.rol} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"><option disabled>Seleccione un rol</option>{roleOptions.map(role => (<option key={role} value={role}>{role}</option>))}</select></div>
           </div>
-          <div className="flex justify-end mt-6 space-x-2">
-            <button type="button" onClick={onClose} disabled={isSaving} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50">Cancelar</button>
-            <button type="submit" disabled={isSaving} className="px-4 py-2 text-sm font-medium text-white rounded-md bg-primary hover:bg-blue-600 disabled:bg-gray-400">
+          <div className="flex justify-end mt-6 space-x-3">
+            <button 
+              type="button" 
+              onClick={onClose} 
+              disabled={isSaving} 
+              className="px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 active:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:border-gray-200 transition-all duration-200"
+            >
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              disabled={isSaving} 
+              className="px-4 py-2.5 text-sm font-semibold text-white rounded-lg bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 active:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-200 shadow-sm hover:shadow-md"
+            >
               {isSaving ? 'Guardando...' : 'Guardar Usuario'}
             </button>
           </div>

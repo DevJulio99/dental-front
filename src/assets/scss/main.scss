@@ -5,12 +5,35 @@
 /* Importa los estilos de react-big-calendar */
 @import 'react-big-calendar/lib/css/react-big-calendar.css';
 
-/* Puedes mantener estilos globales aquí si lo necesitas */
+/* Estilos globales - Diseño limpio y moderno */
 body {
-    @apply bg-gray-100 text-gray-800 font-sans;
+    @apply bg-white text-gray-700 font-sans;
+    font-family: 'Lato', sans-serif;
 }
 
 /* Aplicar Lato globalmente a todos los elementos */
 * {
     font-family: 'Lato', sans-serif;
+}
+
+/* Scrollbar personalizado global - Estilo sutil y profesional */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #F3F4F6;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #D1D5DB; /* gray-300 - gris suave y discreto */
+    border-radius: 5px;
+    border: 2px solid #F3F4F6;
+    transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #9CA3AF; /* gray-400 - un poco más oscuro al hover */
 }

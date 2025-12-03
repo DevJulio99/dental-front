@@ -81,14 +81,14 @@ const ToothUpdateModal = ({ isOpen, onClose, toothNumber, onUpdate, isSaving }) 
       <div className="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-50 backdrop-blur-sm" onClick={onClose}></div>
 
       <div className="relative bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:max-w-lg w-full flex flex-col max-h-[90vh]">
-        <div className="bg-gradient-to-r from-blue-check to-primary px-6 pt-6 pb-4 flex-shrink-0">
-          <h3 className="text-xl font-bold text-blue-50">Actualizar: {toothName} ({toothNumber})</h3>
-          <p className="text-sm text-blue-50">Selecciona el nuevo estado y añade observaciones si es necesario.</p>
+        <div className="bg-gradient-to-r from-primary-400 to-primary-600 px-6 pt-6 pb-4 flex-shrink-0">
+          <h3 className="text-xl font-bold text-white">Actualizar: {toothName} ({toothNumber})</h3>
+          <p className="text-sm text-primary-100">Selecciona el nuevo estado y añade observaciones si es necesario.</p>
         </div>
 
         <div className="bg-white px-6 pt-6 pb-4 space-y-4 overflow-y-auto">
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Estado a Aplicar</label>
+            <label className="block text-sm font-bold text-gray-800 mb-2">Estado a Aplicar</label>
             <div className="flex flex-wrap gap-2 pr-2">
               {statusOptions.map(opt => (
                 <button
@@ -107,7 +107,7 @@ const ToothUpdateModal = ({ isOpen, onClose, toothNumber, onUpdate, isSaving }) 
           </div>
 
           <div>
-            <label htmlFor="fecha-registro-modal" className="block text-sm font-medium text-gray-700 mb-2">Fecha de Registro</label>
+            <label htmlFor="fecha-registro-modal" className="block text-sm font-medium text-gray-800 mb-2">Fecha de Registro</label>
             <div className="flex items-center gap-2">
               <input
                 type="date"
@@ -116,15 +116,15 @@ const ToothUpdateModal = ({ isOpen, onClose, toothNumber, onUpdate, isSaving }) 
                 onChange={(e) => setFechaRegistro(e.target.value)}
                 disabled={!isDateChangeEnabled}
                 max={new Date().toISOString().split('T')[0]}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-200 disabled:cursor-not-allowed"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-200 disabled:cursor-not-allowed"
               />
               <button
                 onClick={handleToggleDateChange}
                 title={isDateChangeEnabled ? "Usar fecha actual" : "Habilitar cambio de fecha"}
-                className={`p-2 rounded-lg transition-all duration-200 ${
+                className={`p-2.5 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
                   isDateChangeEnabled
-                    ? 'bg-primary text-white shadow-md hover:bg-primary-dark'
-                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    ? 'bg-primary-500 text-white shadow-sm hover:bg-primary-600 hover:shadow-md'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
                 <CalendarIcon className="w-5 h-5" />
@@ -136,7 +136,7 @@ const ToothUpdateModal = ({ isOpen, onClose, toothNumber, onUpdate, isSaving }) 
           </div>
 
           <div>
-            <label htmlFor="observaciones-modal" className="block text-sm font-medium text-gray-700 mb-1">Observaciones (opcional)</label>
+            <label htmlFor="observaciones-modal" className="block text-sm font-medium text-gray-800 mb-1">Observaciones (opcional)</label>
             <textarea
               id="observaciones-modal"
               value={observaciones}
@@ -144,7 +144,7 @@ const ToothUpdateModal = ({ isOpen, onClose, toothNumber, onUpdate, isSaving }) 
               rows="3"
               maxLength={1000}
               placeholder="Añadir detalles sobre el estado..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
         </div>
@@ -154,14 +154,14 @@ const ToothUpdateModal = ({ isOpen, onClose, toothNumber, onUpdate, isSaving }) 
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="w-full inline-flex justify-center items-center gap-2 rounded-lg border border-transparent shadow-md px-6 py-3 bg-primary text-blue-50 font-semibold hover:bg-hover-btn-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+            className="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-lg bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 active:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-200 shadow-sm hover:shadow-md sm:ml-3 sm:w-auto"
           >
             {isSaving ? 'Guardando...' : 'Guardar Estado'}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="items-center mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
+            className="mt-3 w-full inline-flex justify-center items-center px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 active:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:border-gray-200 transition-all duration-200 sm:mt-0 sm:w-auto"
           >
             Cancelar
           </button>
