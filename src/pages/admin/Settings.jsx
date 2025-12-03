@@ -387,7 +387,7 @@ const Settings = () => {
                   <div className="mt-4 text-right">
                     <button
                       onClick={() => { setCopySourceDay(day); setTargetCopyDays([]); }}
-                      className="text-sm text-primary hover:underline focus:outline-none">
+                      className="text-sm text-blue-50 hover:underline focus:outline-none">
                       Copiar horario...
                     </button>
                   </div>
@@ -397,7 +397,7 @@ const Settings = () => {
           ))}
         </div>
         <div className="flex justify-end mt-6">
-          <button onClick={handleSaveChanges} disabled={isLoading} className="px-6 py-2 font-bold text-white rounded-md bg-primary hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed">{isLoading ? 'Guardando...' : 'Guardar Cambios'}</button>
+          <button onClick={handleSaveChanges} disabled={isLoading} className="px-6 py-2 font-bold text-blue-50 rounded-md bg-primary hover:bg-hover-btn-primary hover:text-white disabled:bg-gray-400 disabled:text-black disabled:cursor-not-allowed">{isLoading ? 'Guardando...' : 'Guardar Cambios'}</button>
         </div>
       </div>)}
       {/* Modal para Copiar Horario */}
@@ -415,7 +415,7 @@ const Settings = () => {
                   } else {
                     setTargetCopyDays(allOtherDays); // Seleccionar todos
                   }
-                }} className="text-sm font-medium text-primary hover:underline">Seleccionar/Deseleccionar todos</button>
+                }} className="text-sm font-medium text-blue-50 hover:underline">Seleccionar/Deseleccionar todos</button>
             </div>
             <div className="space-y-2">
               {Object.keys(dayNames).filter(d => d !== copySourceDay).map(dayKey => (
@@ -444,7 +444,7 @@ const Settings = () => {
               <button
                 onClick={handleCopySchedule}
                 disabled={targetCopyDays.length === 0}
-                className="px-4 py-2 text-sm font-medium text-white rounded-md bg-primary hover:bg-blue-600 disabled:bg-gray-400">
+                className="px-4 py-2 text-sm font-semibold text-blue-50 rounded-md bg-primary hover:bg-hover-btn-primary hover:text-white disabled:bg-gray-400">
                 Aplicar
               </button>
             </div>

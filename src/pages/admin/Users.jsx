@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
 
 const roleClasses = {
-  'Odontologo': 'bg-blue-100 text-blue-800',
+  'Odontologo': 'bg-blue-100 text-white',
   'Asistente': 'bg-green-100 text-green-800',
   'Admin': 'bg-purple-100 text-purple-800',
   'SuperAdmin': 'bg-red-100 text-red-800',

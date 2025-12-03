@@ -5,12 +5,12 @@ import { format } from 'date-fns-tz';
 import { useApi } from '../../hooks/useApi';
 import Select from 'react-select';
 
-const emptyForm = {
+const getEmptyForm = () => ({
   pacienteId: '',
   usuarioId: '',
   motivo: '',
   observaciones: '',
-};
+});
 
 const customSelectStyles = {
   control: (provided, state) => ({
@@ -46,7 +46,7 @@ const AppointmentModal = ({
   selectedUserId: agendaSelectedUserId,
   scheduleConfig 
 }) => {
-  const [formData, setFormData] = useState(emptyForm);
+  const [formData, setFormData] = useState(getEmptyForm());
   const { isLoading: isSaving } = useApi(); // Ya no necesitamos 'get' aquí
   const modalRef = useModalInteraction(isOpen, onClose, isSaving);
   const isEditing = !!eventToEdit;
@@ -80,10 +80,13 @@ const AppointmentModal = ({
         });
       } else if (slotInfo) {
         // Modo Crear: Reseteamos el formulario y pre-seleccionamos datos
-        setFormData({ ...emptyForm, usuarioId: agendaSelectedUserId });
+        setFormData({ ...getEmptyForm(), usuarioId: agendaSelectedUserId });
       }
+    } else {
+      setFormData(getEmptyForm());
     }
-  }, [isOpen, isEditing, agendaSelectedUserId, activeDate, scheduleConfig, eventToEdit, slotInfo]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, eventToEdit, slotInfo]);
 
   const handlePatientChange = (selectedOption) => {
     setFormData(prev => ({ ...prev, pacienteId: selectedOption ? selectedOption.value : '' }));
@@ -164,7 +167,7 @@ const AppointmentModal = ({
               <button type="button" onClick={() => onDelete(eventToEdit)} disabled={isSaving} className="px-4 py-2 text-sm font-medium text-white bg-error rounded-md hover:bg-red-700 disabled:opacity-50 mr-auto">Eliminar Cita</button>
             )}
             <button type="button" onClick={onClose} disabled={isSaving} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50">Cancelar</button>
-            <button type="submit" disabled={isSaving} className="px-4 py-2 text-sm font-medium text-white rounded-md bg-primary hover:bg-blue-600 disabled:bg-gray-400">
+            <button type="submit" disabled={isSaving} className="px-4 py-2 text-sm font-medium text-blue-50 rounded-md bg-primary hover:bg-hover-btn-primary font-semibold hover:text-white disabled:bg-gray-400">
               {isSaving ? 'Guardando...' : 'Agendar Cita'}
             </button>
           </div>

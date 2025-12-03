@@ -126,44 +126,44 @@ const Agenda = () => {
   useEffect(() => {
     if (!selectedUserId) return;
 
-    const fetchScheduleConfig = async () => {
-      try {
-        const tenantInfo = JSON.parse(localStorage.getItem('tenant'));
-        const subdomain = tenantInfo?.subdominio;
-        if (!subdomain) return;
+    // const fetchScheduleConfig = async () => {
+    //   try {
+    //     const tenantInfo = JSON.parse(localStorage.getItem('tenant'));
+    //     const subdomain = tenantInfo?.subdominio;
+    //     if (!subdomain) return;
 
-        const config = await post('/public/listarConfiguracionHorarios', { subdomain, usuarioId: selectedUserId });
-        setScheduleConfig(config);
+    //     const config = await post('/public/listarConfiguracionHorarios', { subdomain, usuarioId: selectedUserId });
+    //     setScheduleConfig(config);
 
-        if (Array.isArray(config) && config.length > 0) {
-          let minStart = '23:59';
-          let maxEnd = '00:00';
+    //     if (Array.isArray(config) && config.length > 0) {
+    //       let minStart = '23:59';
+    //       let maxEnd = '00:00';
 
-          config.forEach(day => {
-            if (day.isWorkingDay) {
-              if (day.morningStartTime && day.morningStartTime < minStart) minStart = day.morningStartTime;
-              const endOfDay = day.afternoonEndTime || day.morningEndTime;
-              if (endOfDay && endOfDay > maxEnd) maxEnd = endOfDay;
-            }
-          });
+    //       config.forEach(day => {
+    //         if (day.isWorkingDay) {
+    //           if (day.morningStartTime && day.morningStartTime < minStart) minStart = day.morningStartTime;
+    //           const endOfDay = day.afternoonEndTime || day.morningEndTime;
+    //           if (endOfDay && endOfDay > maxEnd) maxEnd = endOfDay;
+    //         }
+    //       });
 
-          if (minStart <= maxEnd) {
-            const [startHour] = minStart.split(':');
-            const [endHour, endMinute] = maxEnd.split(':');
-            setWorkingHours({
-              start: new Date(new Date().setHours(parseInt(startHour, 10), 0, 0, 0)),
-              end: new Date(new Date().setHours(
-                parseInt(endMinute, 10) > 0 ? parseInt(endHour, 10) + 1 : parseInt(endHour, 10),
-                0, 0, 0
-              )),
-            });
-          }
-        }
-      } catch (err) {
-        toast.error('No se pudo cargar el horario del odontólogo.');
-      }
-    };
-    fetchScheduleConfig();
+    //       if (minStart <= maxEnd) {
+    //         const [startHour] = minStart.split(':');
+    //         const [endHour, endMinute] = maxEnd.split(':');
+    //         setWorkingHours({
+    //           start: new Date(new Date().setHours(parseInt(startHour, 10), 0, 0, 0)),
+    //           end: new Date(new Date().setHours(
+    //             parseInt(endMinute, 10) > 0 ? parseInt(endHour, 10) + 1 : parseInt(endHour, 10),
+    //             0, 0, 0
+    //           )),
+    //         });
+    //       }
+    //     }
+    //   } catch (err) {
+    //     toast.error('No se pudo cargar el horario del odontólogo.');
+    //   }
+    // };
+    // fetchScheduleConfig();
   }, [selectedUserId, post]);
 
   // Esta función se dispara al hacer clic en una cita existente
@@ -183,31 +183,31 @@ const Agenda = () => {
       return; // No abre el modal
     }
 
-    // 2. Validamos contra el horario de trabajo del odontólogo.
-    console.log('scheduleConfig:', scheduleConfig);
-    const dayOfWeek = getDay(slotInfo.start); // Domingo = 0, Lunes = 1, etc.
-    const dayConfig = scheduleConfig.find(d => d.dayOfWeek === dayOfWeek);
+    // // 2. Validamos contra el horario de trabajo del odontólogo.
+    // console.log('scheduleConfig:', scheduleConfig);
+    // const dayOfWeek = getDay(slotInfo.start); // Domingo = 0, Lunes = 1, etc.
+    // const dayConfig = scheduleConfig.find(d => d.dayOfWeek === dayOfWeek);
 
-    if (!dayConfig || !dayConfig.isWorkingDay) {
-      toast.error('No se pueden agendar citas en un día no laborable.');
-      return;
-    }
+    // if (!dayConfig || !dayConfig.isWorkingDay) {
+    //   toast.error('No se pueden agendar citas en un día no laborable.');
+    //   return;
+    // }
 
-    // 3. Validamos que el slot esté dentro de los rangos de trabajo.
-    const slotTime = format(slotInfo.start, 'HH:mm');
-    console.log('slotTime:', slotTime);
-    console.log('dayConfig:', dayConfig);
-    const morningStart = dayConfig.morningStartTime?.substring(0, 5);
-    const morningEnd = dayConfig.morningEndTime?.substring(0, 5);
-    const afternoonStart = dayConfig.afternoonStartTime?.substring(0, 5);
-    const afternoonEnd = dayConfig.afternoonEndTime?.substring(0, 5);
+    // // 3. Validamos que el slot esté dentro de los rangos de trabajo.
+    // const slotTime = format(slotInfo.start, 'HH:mm');
+    // console.log('slotTime:', slotTime);
+    // console.log('dayConfig:', dayConfig);
+    // const morningStart = dayConfig.morningStartTime?.substring(0, 5);
+    // const morningEnd = dayConfig.morningEndTime?.substring(0, 5);
+    // const afternoonStart = dayConfig.afternoonStartTime?.substring(0, 5);
+    // const afternoonEnd = dayConfig.afternoonEndTime?.substring(0, 5);
 
-    const isWithinWorkingHours = (morningStart && morningEnd && slotTime >= morningStart && slotTime < morningEnd) || (afternoonStart && afternoonEnd && slotTime >= afternoonStart && slotTime < afternoonEnd);
+    // const isWithinWorkingHours = (morningStart && morningEnd && slotTime >= morningStart && slotTime < morningEnd) || (afternoonStart && afternoonEnd && slotTime >= afternoonStart && slotTime < afternoonEnd);
 
-    if (!isWithinWorkingHours) {
-      toast.error('La hora seleccionada está fuera del horario laboral del odontólogo.');
-      return;
-    }
+    // if (!isWithinWorkingHours) {
+    //   toast.error('La hora seleccionada está fuera del horario laboral del odontólogo.');
+    //   return;
+    // }
 
     // 4. Si todo es válido, abrimos el modal en modo creación.
     setModalData({ slotInfo });

@@ -76,7 +76,7 @@ const UserModal = ({ isOpen, onClose, userToEdit, onSave, isSaving }) => {
           </div>
           <div className="flex justify-end mt-6 space-x-2">
             <button type="button" onClick={onClose} disabled={isSaving} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50">Cancelar</button>
-            <button type="submit" disabled={isSaving} className="px-4 py-2 text-sm font-medium text-white rounded-md bg-primary hover:bg-blue-600 disabled:bg-gray-400">
+            <button type="submit" disabled={isSaving} className="px-4 py-2 text-sm font-semibold text-blue-50 rounded-md bg-primary hover:bg-hover-btn-primary hover:text-white disabled:bg-gray-400">
               {isSaving ? 'Guardando...' : 'Guardar Usuario'}
             </button>
           </div>
