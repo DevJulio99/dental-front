@@ -18,7 +18,14 @@ const UserModal = ({ isOpen, onClose, userToEdit, onSave, isSaving }) => {
   useEffect(() => {
     if (isOpen) {
       if (userToEdit) {
-        setFormData(userToEdit); // Cargar datos para editar
+        // Asegurar que todas las propiedades tengan valores definidos (nunca undefined o null)
+        setFormData({
+          nombre: userToEdit.nombre || '',
+          apellido: userToEdit.apellido || '',
+          email: userToEdit.email || '',
+          password: '', // No se usa al editar, pero se mantiene para evitar warnings
+          rol: userToEdit.rol || 'Asistente',
+        });
       } else {
         setFormData(emptyUserForm); // Limpiar para crear
       }
@@ -34,6 +41,8 @@ const UserModal = ({ isOpen, onClose, userToEdit, onSave, isSaving }) => {
     setFormData(prev => ({ ...prev, [id]: value }));
   };
 
+  const isEditing = !!userToEdit;
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const payload = {
@@ -43,19 +52,18 @@ const UserModal = ({ isOpen, onClose, userToEdit, onSave, isSaving }) => {
       rol: formData.rol,
     };
 
-    // La contraseña solo se envía si se está creando un usuario nuevo
-    // o si se ha escrito algo en el campo de contraseña al editar.
-    if (!isEditing || (isEditing && formData.password)) {
+    // La contraseña solo se envía al crear un usuario nuevo
+    if (!isEditing) {
       if (!formData.password) {
-        // Opcional: podrías mostrar un toast aquí si la contraseña es obligatoria al crear.
+        // La contraseña es obligatoria al crear
         return;
       }
       payload.password = formData.password;
     }
-    onSave(formData.id, payload);
+    // Al editar, el backend no acepta contraseña en el endpoint Update
+    // Para cambiar contraseñas se debe usar el endpoint /change-password o /admin-reset-password
+    onSave(userToEdit?.id, payload);
   };
-
-  const isEditing = !!userToEdit;
 
   return (
     <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -71,7 +79,9 @@ const UserModal = ({ isOpen, onClose, userToEdit, onSave, isSaving }) => {
               <div><label htmlFor="apellido" className="block text-sm font-medium text-gray-800">Apellidos</label><input type="text" id="apellido" value={formData.apellido} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required /></div>
             </div>
             <div><label htmlFor="email" className="block text-sm font-medium text-gray-800">Email</label><input type="email" id="email" value={formData.email} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required /></div>
-            <div><label htmlFor="password" className="block text-sm font-medium text-gray-800">Contraseña</label><input type="password" id="password" value={formData.password} onChange={handleInputChange} placeholder={isEditing ? 'Dejar en blanco para no cambiar' : ''} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required={!isEditing} /></div>
+            {!isEditing && (
+              <div><label htmlFor="password" className="block text-sm font-medium text-gray-800">Contraseña</label><input type="password" id="password" value={formData.password} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required /></div>
+            )}
             <div><label htmlFor="rol" className="block text-sm font-medium text-gray-800">Rol</label><select id="rol" value={formData.rol} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"><option disabled>Seleccione un rol</option>{roleOptions.map(role => (<option key={role} value={role}>{role}</option>))}</select></div>
           </div>
           <div className="flex justify-end mt-6 space-x-2">

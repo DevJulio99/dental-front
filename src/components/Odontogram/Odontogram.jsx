@@ -342,8 +342,8 @@ const Odontogram = ({ patientId }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-center">
           {/* Cuadrantes Superiores */}
           <div className="space-y-6">
-            <div className="bg-primary-500 px-4 py-2 rounded-lg border border-primary-300">
-              <div className="text-sm font-bold text-white flex items-center justify-center gap-2">
+            <div className="bg-primary-50 px-4 py-2 rounded-lg border border-primary-200">
+              <div className="text-sm font-bold text-primary-700 flex items-center justify-center gap-2">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
                 </svg>
@@ -355,8 +355,8 @@ const Odontogram = ({ patientId }) => {
             </div>
           </div>
           <div className="space-y-6">
-            <div className="bg-primary-500 px-4 py-2 rounded-lg border border-primary-300">
-              <div className="text-sm font-bold text-white flex items-center justify-center gap-2">
+            <div className="bg-primary-50 px-4 py-2 rounded-lg border border-primary-200">
+              <div className="text-sm font-bold text-primary-700 flex items-center justify-center gap-2">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
                 </svg>
@@ -370,8 +370,8 @@ const Odontogram = ({ patientId }) => {
 
           {/* Cuadrantes Inferiores */}
           <div className="space-y-6">
-            <div className="bg-primary-500 px-4 py-2 rounded-lg border border-primary-300">
-              <div className="text-sm font-bold text-white flex items-center justify-center gap-2">
+            <div className="bg-primary-50 px-4 py-2 rounded-lg border border-primary-200">
+              <div className="text-sm font-bold text-primary-700 flex items-center justify-center gap-2">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                 </svg>
@@ -383,8 +383,8 @@ const Odontogram = ({ patientId }) => {
             </div>
           </div>
           <div className="space-y-6">
-            <div className="bg-primary-500 px-4 py-2 rounded-lg border border-primary-300">
-              <div className="text-sm font-bold text-white flex items-center justify-center gap-2">
+            <div className="bg-primary-50 px-4 py-2 rounded-lg border border-primary-200">
+              <div className="text-sm font-bold text-primary-700 flex items-center justify-center gap-2">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                 </svg>

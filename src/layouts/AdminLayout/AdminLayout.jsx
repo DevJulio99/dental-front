@@ -1,6 +1,7 @@
 
 import { Outlet, NavLink } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import Header from '../../components/common/Header/Header';
 
 const AdminLayout = () => {
   const { user, logout } = useAuth();
@@ -39,22 +40,14 @@ const AdminLayout = () => {
             Configuración
           </NavLink>
         </nav>
-        <div className="p-4 border-t border-gray-200 bg-white">
-          <p className="font-semibold text-center truncate text-gray-700 mb-2">
-            {user ? `${user.nombre || ''} ${user.apellido || ''}`.trim() : 'Usuario'}
-          </p>
-          <button 
-            onClick={logout} 
-            className="w-full px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 active:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-          >
-            Cerrar Sesión
-          </button>
-        </div>
       </aside>
       {/* Contenido Principal */}
-      <main className="flex-1 overflow-y-auto bg-white">
-        <div className="p-6">
-          <Outlet />
+      <main className="flex-1 flex flex-col overflow-hidden bg-white">
+        <Header />
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-6">
+            <Outlet />
+          </div>
         </div>
       </main>
     </div>

@@ -8,11 +8,11 @@ import toast from 'react-hot-toast';
 import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
 
 const roleClasses = {
-  'Odontologo': 'bg-blue-100 text-white',
-  'Asistente': 'bg-green-100 text-green-800',
-  'Admin': 'bg-purple-100 text-purple-800',
-  'SuperAdmin': 'bg-red-100 text-red-800',
-  'string': 'bg-gray-100 text-gray-800', // Fallback
+  'Odontologo': 'bg-primary-100 text-primary-700',
+  'Asistente': 'bg-primary-50 text-primary-600',
+  'Admin': 'bg-primary-200 text-primary-800',
+  'SuperAdmin': 'bg-gray-200 text-gray-700',
+  'string': 'bg-gray-100 text-gray-700', // Fallback
 };
 
 const Users = () => {
