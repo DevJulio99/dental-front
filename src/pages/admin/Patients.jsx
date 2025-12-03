@@ -96,8 +96,8 @@ const Patients = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Gestión de Pacientes</h1>
-        <button onClick={handleOpenCreateModal} className="flex items-center px-4 py-2 font-bold text-white transition-colors duration-200 transform rounded-md bg-primary hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+        <h1 className="text-2xl font-bold text-blue-50">Gestión de Pacientes</h1>
+        <button onClick={handleOpenCreateModal} className="flex items-center px-4 py-2 font-bold text-white transition-colors duration-200 transform rounded-xl bg-button-primary hover:bg-hover-btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
           <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
           </svg>
@@ -105,7 +105,7 @@ const Patients = () => {
         </button>
       </div>
 
-      <div className="overflow-x-auto bg-white rounded-lg shadow">
+      <div className="overflow-x-auto bg-white rounded-lg shadow-[0_2px_16px_rgba(0,0,0,0.05)]">
         <table className="w-full text-sm text-left text-gray-500">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50">
             <tr>
@@ -130,13 +130,13 @@ const Patients = () => {
                   {patient.fechaUltimaCita ? format(new Date(patient.fechaUltimaCita), 'dd/MM/yyyy HH:mm') : <span className="text-gray-400">Ninguna</span>}
                 </td>
                 <td className="px-6 py-4 space-x-2 text-right">
-                  <Link to={`/pacientes/${patient.id}`} className="inline-flex items-center p-2 text-sm font-medium text-center text-white rounded-lg bg-primary hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300" title="Ver Ficha">
+                  <Link to={`/pacientes/${patient.id}`} className="inline-flex items-center p-2 text-sm font-medium text-center text-white rounded-lg bg-button-primary hover:bg-hover-btn-primary focus:ring-4 focus:outline-none focus:ring-blue-300" title="Ver Ficha">
                     <FileUserIcon className="w-4 h-4 text-white" />
                   </Link>
-                  <button onClick={() => handleOpenEditModal(patient)} className="inline-flex items-center p-2 text-sm font-medium text-center text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 focus:ring-4 focus:outline-none focus:ring-yellow-300" title="Editar">
+                  <button onClick={() => handleOpenEditModal(patient)} className="inline-flex items-center p-2 text-sm font-medium text-center text-white bg-button-primary hover:bg-hover-btn-primary rounded-lg focus:ring-4 focus:outline-none focus:ring-yellow-300" title="Editar">
                     <EditIcon className="w-4 h-4 text-white" />
                   </button>
-                  <button onClick={() => handleOpenDeleteModal(patient)} className="inline-flex items-center p-2 text-sm font-medium text-center text-white rounded-lg bg-error hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300" title="Eliminar">
+                  <button onClick={() => handleOpenDeleteModal(patient)} className="inline-flex items-center p-2 text-sm font-medium text-center text-white rounded-lg bg-button-primary hover:bg-hover-btn-primary focus:ring-4 focus:outline-none focus:ring-red-300" title="Eliminar">
                     <TrashIcon className="w-4 h-4 text-white" />
                   </button>
                 </td>

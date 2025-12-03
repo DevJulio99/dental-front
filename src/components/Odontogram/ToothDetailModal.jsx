@@ -5,6 +5,36 @@ import { format } from 'date-fns';
 import es from 'date-fns/locale/es';
 import LoadingSpinner from '../common/LoadingSpinner/LoadingSpinner';
 
+const getToothName = (number) => {
+  if (!number) return 'Diente';
+  const quadrant = Math.floor(number / 10);
+  const position = number % 10;
+
+  let type = '';
+  switch (position) {
+    case 1: type = 'Incisivo Central'; break;
+    case 2: type = 'Incisivo Lateral'; break;
+    case 3: type = 'Canino'; break;
+    case 4: type = 'Primer Premolar'; break;
+    case 5: type = 'Segundo Premolar'; break;
+    case 6: type = 'Primer Molar'; break;
+    case 7: type = 'Segundo Molar'; break;
+    case 8: type = 'Tercer Molar'; break;
+    default: type = 'Diente';
+  }
+
+  let location = '';
+  switch (quadrant) {
+    case 1: location = 'Superior Derecho'; break;
+    case 2: location = 'Superior Izquierdo'; break;
+    case 3: location = 'Inferior Izquierdo'; break;
+    case 4: location = 'Inferior Derecho'; break;
+    default: location = '';
+  }
+
+  return `${type} ${location}`;
+};
+
 const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate }) => {
   const { get, post, isLoading } = useApi();
   const [historial, setHistorial] = useState([]);
@@ -12,6 +42,7 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
   const [selectedStatus, setSelectedStatus] = useState('sano');
   const [observaciones, setObservaciones] = useState('');
   const [fechaRegistro, setFechaRegistro] = useState(new Date().toISOString().split('T')[0]);
+  const toothName = getToothName(toothNumber);
 
   const statusOptions = [
     { id: 'sano', label: 'Sano', color: 'bg-white border-gray-400' },
@@ -79,13 +110,11 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-50 backdrop-blur-sm" onClick={onClose}></div>
 
-        <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-          {/* Header mejorado */}
-          <div className="bg-gradient-to-r from-primary to-blue-600 px-6 pt-6 pb-4">
+        <div className="relative bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:max-w-4xl w-full flex flex-col max-h-[90vh]">
+          <div className="bg-gradient-to-r from-blue-check to-primary px-6 pt-6 pb-4 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg">
@@ -94,10 +123,10 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white">
-                    Diente {toothNumber}
+                  <h3 className="text-xl font-bold text-blue-50">
+                    {toothName} ({toothNumber})
                   </h3>
-                  <p className="text-sm text-blue-100">Historial y Detalles</p>
+                  <p className="text-sm text-blue-50">Historial y Detalles</p>
                 </div>
               </div>
               <button
@@ -112,10 +141,10 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
             </div>
           </div>
 
-          <div className="bg-white px-6 pt-6 pb-4">
+          <div className="bg-white px-6 pt-6 pb-4 overflow-y-auto">
 
             {/* Formulario para agregar nuevo registro mejorado */}
-            <div className="mb-6 p-5 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl border-2 border-gray-200 shadow-sm">
+            <div className="mb-6 p-5 bg-gradient-to-br from-gray-50 to-primary rounded-xl border-2 border-gray-200 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
                 <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -171,7 +200,7 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
               <button
                 onClick={handleSave}
                 disabled={isLoading}
-                className="w-full px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                className="w-full px-4 py-3 bg-button-primary text-blue-50 rounded-lg hover:bg-hover-btn-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2"
               >
                 {isLoading ? (
                   <>
@@ -252,7 +281,7 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
             </div>
           </div>
 
-          <div className="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse border-t border-gray-200">
+          <div className="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse border-t border-gray-200 flex-shrink-0">
             <button
               type="button"
               onClick={onClose}
@@ -265,10 +294,8 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
             </button>
           </div>
         </div>
-      </div>
     </div>
   );
 };
 
 export default ToothDetailModal;
-

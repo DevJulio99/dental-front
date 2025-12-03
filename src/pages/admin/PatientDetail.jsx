@@ -59,7 +59,7 @@ const PatientDetail = () => {
 
   return (
     <div>
-      <Link to="/pacientes" className="text-primary hover:underline mb-4 inline-block">
+      <Link to="/pacientes" className="text-black hover:underline mb-4 inline-block font-bold">
         &larr; Volver a la lista de pacientes
       </Link>
       

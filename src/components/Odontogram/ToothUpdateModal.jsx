@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
-import { format } from 'date-fns';
 import { ReactComponent as CalendarIcon } from '../../assets/icons/ic-calendar.svg';
 
 const statusOptions = [
@@ -17,11 +16,41 @@ const statusOptions = [
   { id: 'puente', label: 'Puente', color: 'bg-violet-500 text-white' },
 ];
 
+const getToothName = (number) => {
+  const quadrant = Math.floor(number / 10);
+  const position = number % 10;
+
+  let type = '';
+  switch (position) {
+    case 1: type = 'Incisivo Central'; break;
+    case 2: type = 'Incisivo Lateral'; break;
+    case 3: type = 'Canino'; break;
+    case 4: type = 'Primer Premolar'; break;
+    case 5: type = 'Segundo Premolar'; break;
+    case 6: type = 'Primer Molar'; break;
+    case 7: type = 'Segundo Molar'; break;
+    case 8: type = 'Tercer Molar'; break;
+    default: type = 'Diente';
+  }
+
+  let location = '';
+  switch (quadrant) {
+    case 1: location = 'Superior Derecho'; break;
+    case 2: location = 'Superior Izquierdo'; break;
+    case 3: location = 'Inferior Izquierdo'; break;
+    case 4: location = 'Inferior Derecho'; break;
+    default: location = '';
+  }
+
+  return `${type} ${location}`;
+};
+
 const ToothUpdateModal = ({ isOpen, onClose, toothNumber, onUpdate, isSaving }) => {
   const [selectedStatus, setSelectedStatus] = useState('sano');
   const [observaciones, setObservaciones] = useState('');
   const [fechaRegistro, setFechaRegistro] = useState(new Date().toISOString().split('T')[0]);
   const [isDateChangeEnabled, setIsDateChangeEnabled] = useState(false);
+  const toothName = getToothName(toothNumber);
 
   const handleSave = () => {
     const fechaObj = new Date(fechaRegistro + 'T00:00:00');
@@ -52,9 +81,9 @@ const ToothUpdateModal = ({ isOpen, onClose, toothNumber, onUpdate, isSaving }) 
       <div className="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-50 backdrop-blur-sm" onClick={onClose}></div>
 
       <div className="relative bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:max-w-lg w-full flex flex-col max-h-[90vh]">
-        <div className="bg-gradient-to-r from-primary to-blue-600 px-6 pt-6 pb-4 flex-shrink-0">
-          <h3 className="text-xl font-bold text-white">Actualizar Diente {toothNumber}</h3>
-          <p className="text-sm text-blue-100">Selecciona el nuevo estado y añade observaciones si es necesario.</p>
+        <div className="bg-gradient-to-r from-blue-check to-primary px-6 pt-6 pb-4 flex-shrink-0">
+          <h3 className="text-xl font-bold text-blue-50">Actualizar: {toothName} ({toothNumber})</h3>
+          <p className="text-sm text-blue-50">Selecciona el nuevo estado y añade observaciones si es necesario.</p>
         </div>
 
         <div className="bg-white px-6 pt-6 pb-4 space-y-4 overflow-y-auto">
@@ -125,7 +154,7 @@ const ToothUpdateModal = ({ isOpen, onClose, toothNumber, onUpdate, isSaving }) 
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="w-full inline-flex justify-center items-center gap-2 rounded-lg border border-transparent shadow-md px-6 py-3 bg-primary text-base font-semibold text-white hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+            className="w-full inline-flex justify-center items-center gap-2 rounded-lg border border-transparent shadow-md px-6 py-3 bg-primary text-blue-50 font-semibold hover:bg-hover-btn-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
           >
             {isSaving ? 'Guardando...' : 'Guardar Estado'}
           </button>

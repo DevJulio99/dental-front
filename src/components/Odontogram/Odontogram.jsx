@@ -247,7 +247,7 @@ const Odontogram = ({ patientId }) => {
           
           <button
             onClick={() => setShowLegend(!showLegend)}
-            className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
+            className="px-4 py-2 text-sm font-bold text-blue-50 bg-primary rounded-lg hover:bg-primary-dark transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -257,7 +257,7 @@ const Odontogram = ({ patientId }) => {
         </div>
 
         {/* Controles superiores mejorados */}
-        <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-gradient-to-r from-primary to-light-blue rounded-lg border border-blue-check shadow-sm">
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
               <input
@@ -342,8 +342,8 @@ const Odontogram = ({ patientId }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-center">
           {/* Cuadrantes Superiores */}
           <div className="space-y-6">
-            <div className="bg-blue-50 px-4 py-2 rounded-lg border border-blue-200">
-              <div className="text-sm font-bold text-blue-800 flex items-center justify-center gap-2">
+            <div className="bg-primary px-4 py-2 rounded-lg border border-blue-200">
+              <div className="text-sm font-bold text-blue-50 flex items-center justify-center gap-2">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
                 </svg>
@@ -355,8 +355,8 @@ const Odontogram = ({ patientId }) => {
             </div>
           </div>
           <div className="space-y-6">
-            <div className="bg-blue-50 px-4 py-2 rounded-lg border border-blue-200">
-              <div className="text-sm font-bold text-blue-800 flex items-center justify-center gap-2">
+            <div className="bg-primary px-4 py-2 rounded-lg border border-blue-200">
+              <div className="text-sm font-bold text-blue-50 flex items-center justify-center gap-2">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
                 </svg>
@@ -370,8 +370,8 @@ const Odontogram = ({ patientId }) => {
 
           {/* Cuadrantes Inferiores */}
           <div className="space-y-6">
-            <div className="bg-green-50 px-4 py-2 rounded-lg border border-green-200">
-              <div className="text-sm font-bold text-green-800 flex items-center justify-center gap-2">
+            <div className="bg-primary px-4 py-2 rounded-lg border border-green-200">
+              <div className="text-sm font-bold text-blue-50 flex items-center justify-center gap-2">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                 </svg>
@@ -383,8 +383,8 @@ const Odontogram = ({ patientId }) => {
             </div>
           </div>
           <div className="space-y-6">
-            <div className="bg-green-50 px-4 py-2 rounded-lg border border-green-200">
-              <div className="text-sm font-bold text-green-800 flex items-center justify-center gap-2">
+            <div className="bg-primary px-4 py-2 rounded-lg border border-green-200">
+              <div className="text-sm font-bold text-blue-50 flex items-center justify-center gap-2">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                 </svg>

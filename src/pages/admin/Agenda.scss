@@ -43,9 +43,15 @@
 }
 
 .rbc-btn-group button.rbc-active {
-  background-color: #3b82f6;
+  background-color: theme('colors.primary');
   color: #ffffff;
-  border-color: #3b82f6;
+  border-color: theme('colors.primary');
+}
+
+.rbc-toolbar button:active:hover, .rbc-toolbar button:active:focus, .rbc-toolbar button.rbc-active:hover, .rbc-toolbar button.rbc-active:focus{
+  background-color: theme('colors.primary');
+  border-color: theme('colors.primary');
+  color: #ffffff;
 }
 
 .rbc-time-gutter .rbc-label {

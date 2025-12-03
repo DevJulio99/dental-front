@@ -2,6 +2,7 @@ import { useState, useEffect} from 'react';
 import toast from 'react-hot-toast';
 import { useApi } from '../../hooks/useApi';
 import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
+import CustomCheckbox from '../../components/common/CustomCheckbox/CustomCheckbox';
 
 const getInitialSchedule = () => ({
   lunes: { enabled: false, morningStart: null, morningEnd: null, afternoonStart: null, afternoonEnd: null },
@@ -262,7 +263,7 @@ const Settings = () => {
 
   return ( // El spinner se mostrará aquí si isLoading es true
     <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Configuración de Horarios</h1>
+      <h1 className="text-2xl font-bold text-blue-50 mb-6">Configuración de Horarios</h1>
       
       <div className="mb-6 p-4 bg-white rounded-lg shadow-md">
         <label htmlFor="user-select" className="block text-sm font-medium text-gray-700 mb-2">
@@ -290,8 +291,13 @@ const Settings = () => {
             <div key={day} className="border rounded-md overflow-hidden">
               <div className="flex items-center justify-between p-4 cursor-pointer bg-gray-50 hover:bg-gray-100" onClick={() => handleToggleAccordion(day)}>
                 <div className="flex items-center">
-                  <input type="checkbox" id={`check-${day}`} checked={schedule[day].enabled} onChange={() => handleEnabledChange(day)} onClick={(e) => e.stopPropagation()} className="w-5 h-5 text-primary rounded focus:ring-primary" />
-                  <label htmlFor={`check-${day}`} className="ml-3 font-medium text-gray-800 capitalize cursor-pointer">{dayNames[day]}</label>
+                  <CustomCheckbox
+                    id={`check-${day}`}
+                    checked={schedule[day].enabled}
+                    onChange={() => handleEnabledChange(day)}
+                    onClick={(e) => e.stopPropagation()}
+                    label={dayNames[day]}
+                  />
                 </div>
                 <svg className={`w-5 h-5 text-gray-500 transform transition-transform duration-300 ${openDay === day ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
               </div>

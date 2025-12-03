@@ -93,8 +93,8 @@ const Users = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Gestión de Usuarios</h1>
-        <button onClick={handleOpenCreateModal} className="flex items-center px-4 py-2 font-bold text-white transition-colors duration-200 transform rounded-md bg-primary hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+        <h1 className="text-2xl font-bold text-blue-50">Gestión de Usuarios</h1>
+        <button onClick={handleOpenCreateModal} className="flex items-center px-4 py-2 font-bold text-white transition-colors duration-200 transform rounded-md bg-button-primary hover:bg-hover-btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
           <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
           </svg>
@@ -121,8 +121,8 @@ const Users = () => {
                 <td className="px-6 py-4">{user.email}</td>
                 <td className="px-6 py-4"><span className={`px-2 py-1 text-xs font-semibold rounded-full ${roleClasses[user.rol] || 'bg-gray-100 text-gray-800'}`}>{user.rol}</span></td>
                 <td className="px-6 py-4 space-x-2 text-right">
-                  <button onClick={() => handleOpenEditModal(user)} className="inline-flex items-center p-2 text-sm font-medium text-center text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 focus:ring-4 focus:outline-none focus:ring-yellow-300" title="Editar"><EditIcon className="w-4 h-4 text-white" /></button>
-                  <button onClick={() => setUserToDelete(user)} className="inline-flex items-center p-2 text-sm font-medium text-center text-white rounded-lg bg-error hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300" title="Eliminar"><TrashIcon className="w-4 h-4 text-white" /></button>
+                  <button onClick={() => handleOpenEditModal(user)} className="inline-flex items-center p-2 text-sm font-medium text-center text-white bg-button-primary hover:bg-hover-btn-primary rounded-lg focus:ring-4 focus:outline-none focus:ring-yellow-300" title="Editar"><EditIcon className="w-4 h-4 text-white" /></button>
+                  <button onClick={() => setUserToDelete(user)} className="inline-flex items-center p-2 text-sm font-medium text-center text-white rounded-lg bg-button-primary hover:bg-hover-btn-primary focus:ring-4 focus:outline-none focus:ring-red-300" title="Eliminar"><TrashIcon className="w-4 h-4 text-white" /></button>
                 </td>
               </tr>
             ))}

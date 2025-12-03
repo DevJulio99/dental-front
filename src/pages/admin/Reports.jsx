@@ -118,7 +118,7 @@ const Reports = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Reportes Básicos</h1>
+      <h1 className="text-2xl font-bold text-blue-50 mb-6">Reportes Básicos</h1>
       
       {/* Fila de Tarjetas Principales */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">

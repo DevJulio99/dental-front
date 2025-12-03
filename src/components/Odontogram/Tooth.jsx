@@ -1,4 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import molarImage from '../../assets/images/molar.png';
+import premolarImage from '../../assets/images/premolar.PNG';
+import caninoImage from '../../assets/images/canino.PNG';
+import incisivoImage from '../../assets/images/incisivo.PNG';
 
 // Mapeo completo de estados con colores y estilos mejorados
 const statusConfig = {
@@ -90,6 +94,35 @@ const getToothType = (number) => {
   return 'molar'; // 6, 7, 8
 };
 
+const getToothName = (number) => {
+  const quadrant = Math.floor(number / 10);
+  const position = number % 10;
+
+  let type = '';
+  switch (position) {
+    case 1: type = 'Incisivo Central'; break;
+    case 2: type = 'Incisivo Lateral'; break;
+    case 3: type = 'Canino'; break;
+    case 4: type = 'Primer Premolar'; break;
+    case 5: type = 'Segundo Premolar'; break;
+    case 6: type = 'Primer Molar'; break;
+    case 7: type = 'Segundo Molar'; break;
+    case 8: type = 'Tercer Molar'; break;
+    default: type = 'Diente';
+  }
+
+  let location = '';
+  switch (quadrant) {
+    case 1: location = 'Superior Derecho'; break;
+    case 2: location = 'Superior Izquierdo'; break;
+    case 3: location = 'Inferior Izquierdo'; break;
+    case 4: location = 'Inferior Derecho'; break;
+    default: location = '';
+  }
+
+  return `${type} ${location}`;
+};
+
 // Componente para renderizar diente realista
 const RealisticTooth = ({ status, toothType }) => {
   const isMolar = toothType === 'molar';
@@ -102,107 +135,42 @@ const RealisticTooth = ({ status, toothType }) => {
     if (isMolar) {
       // Molar: forma cuadrada/rectangular con cúspides
       return (
-        <g>
-          {/* Corona del molar */}
-          <path 
-            d="M25,20 L30,15 L70,15 L75,20 L75,60 L70,65 L30,65 L25,60 Z" 
-            className="fill-white stroke-gray-300" 
-            strokeWidth="2"
-          />
-          {/* Cúspides del molar */}
-          <circle cx="35" cy="25" r="4" className="fill-white stroke-gray-300" strokeWidth="1.5" />
-          <circle cx="65" cy="25" r="4" className="fill-white stroke-gray-300" strokeWidth="1.5" />
-          <circle cx="35" cy="55" r="4" className="fill-white stroke-gray-300" strokeWidth="1.5" />
-          <circle cx="65" cy="55" r="4" className="fill-white stroke-gray-300" strokeWidth="1.5" />
-          {/* Cuello del diente */}
-          <path 
-            d="M28,60 L32,70 L68,70 L72,60" 
-            className="fill-white stroke-gray-300" 
-            strokeWidth="2"
-          />
-          {/* Raíz */}
-          <path 
-            d="M32,70 Q50,75 68,70" 
-            className="fill-white stroke-gray-300" 
-            strokeWidth="2"
-          />
-        </g>
+        <image 
+          href={molarImage} 
+          x="10" y="10" 
+          width="80" height="80" 
+          preserveAspectRatio="xMidYMid meet" 
+        />
       );
     } else if (isPremolar) {
       // Premolar: forma más redondeada
-      return (
-        <g>
-          {/* Corona del premolar */}
-          <path 
-            d="M30,20 Q50,12 70,20 L72,55 Q50,68 28,55 Z" 
-            className="fill-white stroke-gray-300" 
-            strokeWidth="2"
-          />
-          {/* Cúspide principal */}
-          <circle cx="50" cy="25" r="5" className="fill-white stroke-gray-300" strokeWidth="1.5" />
-          {/* Cuello */}
-          <path 
-            d="M30,55 Q50,60 70,55" 
-            className="fill-white stroke-gray-300" 
-            strokeWidth="2"
-          />
-          {/* Raíz */}
-          <path 
-            d="M32,55 Q50,62 68,55" 
-            className="fill-white stroke-gray-300" 
-            strokeWidth="2"
-          />
-        </g>
+      return ( 
+        <image 
+          href={premolarImage} 
+          x="10" y="10" 
+          width="80" height="80" 
+          preserveAspectRatio="xMidYMid meet" 
+        />
       );
     } else if (isCanino) {
       // Canino: forma puntiaguda
       return (
-        <g>
-          {/* Corona del canino */}
-          <path 
-            d="M35,20 L50,10 L65,20 L68,50 Q50,65 32,50 Z" 
-            className="fill-white stroke-gray-300" 
-            strokeWidth="2"
-          />
-          {/* Cuello */}
-          <path 
-            d="M35,50 Q50,55 65,50" 
-            className="fill-white stroke-gray-300" 
-            strokeWidth="2"
-          />
-          {/* Raíz larga */}
-          <path 
-            d="M38,50 Q50,70 62,50" 
-            className="fill-white stroke-gray-300" 
-            strokeWidth="2"
-          />
-        </g>
+        <image 
+          href={caninoImage} 
+          x="10" y="10" 
+          width="80" height="80" 
+          preserveAspectRatio="xMidYMid meet" 
+        />
       );
     } else {
       // Incisivo: forma rectangular con borde cortante
       return (
-        <g>
-          {/* Corona del incisivo */}
-          <path 
-            d="M30,20 L70,20 L72,50 Q50,58 28,50 Z" 
-            className="fill-white stroke-gray-300" 
-            strokeWidth="2"
-          />
-          {/* Borde cortante */}
-          <line x1="30" y1="20" x2="70" y2="20" stroke="#e5e7eb" strokeWidth="1" />
-          {/* Cuello */}
-          <path 
-            d="M32,50 Q50,55 68,50" 
-            className="fill-white stroke-gray-300" 
-            strokeWidth="2"
-          />
-          {/* Raíz */}
-          <path 
-            d="M35,50 Q50,65 65,50" 
-            className="fill-white stroke-gray-300" 
-            strokeWidth="2"
-          />
-        </g>
+        <image 
+          href={incisivoImage} 
+          x="10" y="10" 
+          width="80" height="80" 
+          preserveAspectRatio="xMidYMid meet" 
+        />
       );
     }
   };
@@ -350,12 +318,12 @@ const RealisticTooth = ({ status, toothType }) => {
     <g>
       {/* Sombra base */}
       <defs>
-        <filter id="shadow">
+        <filter id="tooth-shadow">
           <feDropShadow dx="1" dy="2" stdDeviation="2" floodOpacity="0.2"/>
         </filter>
       </defs>
       
-      {/* Forma base del diente */}
+      {/* Forma base del diente con sombra */}
       {getToothShape()}
       
       {/* Estado del diente */}
@@ -368,7 +336,9 @@ const Tooth = ({ number, status, onClick, onDoubleClick, hasHistory = false, cla
   const [isHovered, setIsHovered] = useState(false);
   const config = statusConfig[status] || statusConfig.sano;
   const baseClass = "cursor-pointer transition-all duration-300 ease-in-out";
+  const toothName = getToothName(number);
   const toothType = getToothType(number);
+  const isSuperior = number < 30;
 
   // Manejar clic simple y doble clic
   const clickTimeoutRef = useRef(null);
@@ -403,14 +373,14 @@ const Tooth = ({ number, status, onClick, onDoubleClick, hasHistory = false, cla
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={`flex flex-col items-center group relative ${className}`}
-      title={`Diente ${number} - ${config.label}${hasHistory ? ' (Tiene historial - Doble clic para ver)' : ''}`}
+      title={`${toothName} (${number}) - ${config.label}${hasHistory ? ' (Tiene historial - Doble clic para ver)' : ''}`}
     >
       {/* Tooltip mejorado */}
       {isHovered && (
         <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none">
           <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 shadow-lg whitespace-nowrap">
-            <div className="font-semibold">Diente {number}</div>
-            <div className="text-gray-300">{config.label}</div>
+            <div className="font-bold text-blue-300">{toothName} ({number})</div>
+            <div className="text-gray-200 mt-0.5">Estado: {config.label}</div>
             {hasHistory && (
               <div className="text-blue-300 mt-1">📋 Ver historial</div>
             )}
@@ -421,33 +391,31 @@ const Tooth = ({ number, status, onClick, onDoubleClick, hasHistory = false, cla
         </div>
       )}
 
-      {/* Contenedor del diente con diseño realista */}
       <div className={`relative ${baseClass} ${isSelected ? 'ring-4 ring-blue-400 ring-offset-2 rounded-lg' : ''}`}>
         <svg 
           width="60" 
           height="75" 
           viewBox="0 0 100 100" 
-          className={`${isHovered ? 'scale-110' : ''} ${isSelected ? 'drop-shadow-lg' : ''}`}
-          style={{ filter: isHovered ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))' : 'none' }}
+          className={`transition-transform duration-200 ${isHovered ? 'scale-110' : ''} ${isSelected ? 'drop-shadow-lg' : ''}`}
+          style={{ filter: isHovered || isSelected ? 'url(#tooth-shadow)' : 'none' }}
         >
-          {status === 'extraido' ? (
-            <g>
-              {/* Espacio vacío con encía */}
-              <path 
-                d="M20,60 Q50,70 80,60 Q50,75 20,60" 
-                className="fill-[#fecdd3] stroke-[#fda4af]" 
-                strokeWidth="2" 
-                opacity="0.6"
-              />
-              {/* X de extraído */}
-              <line x1="30" y1="30" x2="70" y2="70" stroke="#ef4444" strokeWidth="5" strokeLinecap="round" />
-              <line x1="30" y1="70" x2="70" y2="30" stroke="#ef4444" strokeWidth="5" strokeLinecap="round" />
-              {/* Sombra del espacio */}
-              <ellipse cx="50" cy="65" rx="25" ry="8" className="fill-black opacity-10" />
-            </g>
-          ) : (
-            <RealisticTooth status={status} toothType={toothType} />
-          )}
+          <g transform={isSuperior ? "translate(0, 100) scale(1, -1)" : ""}>
+            {status === 'extraido' ? (
+              <g>
+                <path 
+                  d="M20,60 Q50,70 80,60 Q50,75 20,60" 
+                  className="fill-[#fecdd3] stroke-[#fda4af]" 
+                  strokeWidth="2" 
+                  opacity="0.6"
+                />
+                <line x1="30" y1="30" x2="70" y2="70" stroke="#ef4444" strokeWidth="5" strokeLinecap="round" />
+                <line x1="30" y1="70" x2="70" y2="30" stroke="#ef4444" strokeWidth="5" strokeLinecap="round" />
+                <ellipse cx="50" cy="65" rx="25" ry="8" className="fill-black opacity-10" />
+              </g>
+            ) : (
+              <RealisticTooth status={status} toothType={toothType} />
+            )}
+          </g>
         </svg>
         
         {/* Indicador de historial mejorado */}
@@ -460,7 +428,7 @@ const Tooth = ({ number, status, onClick, onDoubleClick, hasHistory = false, cla
       
       {/* Número del diente con mejor estilo */}
       <span className={`mt-2 text-xs font-bold transition-colors ${
-        isHovered ? 'text-blue-600 scale-110' : 'text-gray-700'
+        isHovered ? 'text-blue-check scale-110' : 'text-gray-700'
       }`}>
         {number}
       </span>
