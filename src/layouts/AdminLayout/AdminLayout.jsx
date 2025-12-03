@@ -1,24 +1,25 @@
 
 import { Outlet, NavLink } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-// import './AdminLayout.scss'; // Ya no es necesario
 
 const AdminLayout = () => {
   const { user, logout } = useAuth();
 
   const navLinkClasses = ({ isActive }) =>
-    `flex items-center px-4 py-2 text-blue-50 transition-colors duration-200 transform hover:bg-white hover:text-blue-100 ${
-      isActive ? 'border-l-[7px] border-[#82C9FE] bg-white font-bold' : ''
+    `flex items-center px-4 py-2 text-gray-700 transition-all duration-200 ${
+      isActive 
+        ? 'border-l-4 border-primary-500 bg-primary-50 text-primary-700 font-semibold' 
+        : 'hover:bg-gray-50 hover:text-primary-600'
     }`;
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-white">
       {/* Sidebar */}
-      <aside className="flex flex-col w-64 bg-primary text-blue-50">
-        <div className="flex items-center justify-center h-16">
-          <span className="text-2xl font-bold">DentalSys</span>
+      <aside className="flex flex-col w-64 bg-white border-r border-gray-200 shadow-sm">
+        <div className="flex items-center justify-center h-16 border-b border-gray-200">
+          <span className="text-2xl font-bold text-primary-600">DentalSys</span>
         </div>
-        <nav className="flex-1 py-4 space-y-2">
+        <nav className="flex-1 py-4 space-y-1 px-2">
           <NavLink to="/" end className={navLinkClasses}>
             Dashboard
           </NavLink>
@@ -38,18 +39,23 @@ const AdminLayout = () => {
             Configuración
           </NavLink>
         </nav>
-        <div className="p-4">
-          <p className="font-semibold text-center truncate">
+        <div className="p-4 border-t border-gray-200 bg-white">
+          <p className="font-semibold text-center truncate text-gray-700 mb-2">
             {user ? `${user.nombre || ''} ${user.apellido || ''}`.trim() : 'Usuario'}
           </p>
-          <button onClick={logout} className="w-full px-4 py-2 mt-2 text-sm font-medium text-blue-50 transition-colors duration-200 transform bg-white/10 border border-white/20 rounded-md hover:bg-white/20 hover:border-white/30 focus:outline-none focus:bg-white/20">
+          <button 
+            onClick={logout} 
+            className="w-full px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 active:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+          >
             Cerrar Sesión
           </button>
         </div>
       </aside>
       {/* Contenido Principal */}
-      <main className="flex-1 p-6 overflow-y-auto bg-light-blue">
-        <Outlet /> {/* Aquí se renderizan las páginas (Dashboard, Pacientes, etc.) */}
+      <main className="flex-1 overflow-y-auto bg-white">
+        <div className="p-6">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

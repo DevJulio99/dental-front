@@ -327,20 +327,20 @@ const Agenda = () => {
   }
 
   if (listError) {
-    return <div className="flex items-center justify-center h-full text-red-500">{listError}</div>;
+    return <div className="flex items-center justify-center h-full text-error-600 font-medium">{listError}</div>;
   }
 
   return (
     <div>
-      <div className="mb-4 p-4 bg-white rounded-lg shadow-md">
-        <label htmlFor="user-select-agenda" className="block text-sm font-medium text-gray-700 mb-2">
+      <div className="mb-6 p-4 bg-white rounded-xl shadow-soft">
+        <label htmlFor="user-select-agenda" className="block text-sm font-semibold text-gray-800 mb-2">
           Mostrando agenda para:
         </label>
         <select
           id="user-select-agenda"
           value={selectedUserId}
           onChange={(e) => setSelectedUserId(e.target.value)}
-          className="block w-full max-w-xs p-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+          className="block w-full max-w-xs px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
           disabled={users.length === 0}
         >
           {users.map(user => (
