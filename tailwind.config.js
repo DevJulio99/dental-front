@@ -24,7 +24,7 @@ module.exports = {
       },
       fontFamily: {
         // Mapeamos tu fuente base
-        'sans': ['Roboto', 'sans-serif'],
+        'sans': ['Lato', 'sans-serif'],
       }
     },
   },

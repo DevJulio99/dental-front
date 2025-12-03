@@ -42,7 +42,7 @@ const AdminLayout = () => {
           <p className="font-semibold text-center truncate">
             {user ? `${user.nombre || ''} ${user.apellido || ''}`.trim() : 'Usuario'}
           </p>
-          <button onClick={logout} className="w-full px-4 py-2 mt-2 text-sm font-medium text-white transition-colors duration-200 transform bg-light-red rounded-md hover:bg-red-700 focus:outline-none focus:bg-red-700">
+          <button onClick={logout} className="w-full px-4 py-2 mt-2 text-sm font-medium text-blue-50 transition-colors duration-200 transform bg-white/10 border border-white/20 rounded-md hover:bg-white/20 hover:border-white/30 focus:outline-none focus:bg-white/20">
             Cerrar Sesión
           </button>
         </div>

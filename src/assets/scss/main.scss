@@ -7,5 +7,10 @@
 
 /* Puedes mantener estilos globales aquí si lo necesitas */
 body {
-    @apply bg-gray-100 text-gray-800;
+    @apply bg-gray-100 text-gray-800 font-sans;
+}
+
+/* Aplicar Lato globalmente a todos los elementos */
+* {
+    font-family: 'Lato', sans-serif;
 }
