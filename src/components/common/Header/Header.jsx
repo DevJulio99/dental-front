@@ -133,7 +133,7 @@ const Header = () => {
                     </svg>
                     Configuración
                   </button>
-
+{/* 
                   <div className="border-t border-gray-200 my-1"></div>
 
                   <button
@@ -152,7 +152,7 @@ const Header = () => {
                       <path fillRule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm12.293 4.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L18.586 11H8a1 1 0 110-2h10.586l-3.293-3.293a1 1 0 010-1.414z" clipRule="evenodd" />
                     </svg>
                     Cerrar sesión
-                  </button>
+                  </button> */}
                 </div>
               </>
             )}

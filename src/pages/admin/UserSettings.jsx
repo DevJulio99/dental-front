@@ -52,7 +52,6 @@ const UserSettings = () => {
     setIsProfileSaving(true);
     try {
       const updatedUser = await put(`/Usuarios/${user.id}`, {
-        ...user,
         nombre: data.nombre,
         apellido: data.apellido,
       });
