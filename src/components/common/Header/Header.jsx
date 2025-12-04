@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 
 const Header = () => {
   const { user, logout } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
 
+  const navigate = useNavigate();
   const userInitials = user 
     ? `${user.nombre?.[0] || ''}${user.apellido?.[0] || ''}`.trim().toUpperCase() || 'U'
     : 'U';
@@ -12,6 +14,11 @@ const Header = () => {
   const userName = user 
     ? `${user.nombre || ''} ${user.apellido || ''}`.trim() || 'Usuario'
     : 'Usuario';
+
+  const handleNavigate = (path) => {
+    setShowUserMenu(false);
+    navigate(path);
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-soft">
@@ -113,9 +120,7 @@ const Header = () => {
                   </button> */}
 
                   <button
-                    onClick={() => {
-                      setShowUserMenu(false);
-                    }}
+                    onClick={() => handleNavigate('/user-settings')}
                     className="w-full flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
                   >
                     <svg
@@ -159,4 +164,3 @@ const Header = () => {
 };
 
 export default Header;
-

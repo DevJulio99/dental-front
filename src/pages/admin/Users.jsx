@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ReactComponent as EditIcon } from '../../assets/icons/ic-edit.svg';
 import { ReactComponent as TrashIcon } from '../../assets/icons/ic-delete.svg';
 import UserModal from '../../components/admin/UserModal';
+import ChangePasswordModal from '../../components/admin/ChangePasswordModal';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import { useApi } from '../../hooks/useApi';
+import { useAuth } from '../../hooks/useAuth';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
 
@@ -17,11 +19,14 @@ const roleClasses = {
 
 const Users = () => {
   const [users, setUsers] = useState([]);
+  const { user: loggedInUser } = useAuth(); // Get the currently logged-in user
   const { isLoading, error, get, post, put, del } = useApi();
   const [isListLoading, setIsListLoading] = useState(true);
   const [listError, setListError] = useState(null);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
+  const [userForPasswordChange, setUserForPasswordChange] = useState(null);
   const [userToDelete, setUserToDelete] = useState(null);
 
   useEffect(() => {
@@ -55,6 +60,12 @@ const Users = () => {
   const handleCloseUserModal = () => {
     setIsUserModalOpen(false);
     setEditingUser(null);
+  };
+
+  const handleOpenChangePasswordModal = (user) => {
+    handleCloseUserModal();
+    setUserForPasswordChange(user);
+    setIsChangePasswordModalOpen(true);
   };
 
   const handleSaveUser = async (id, payload) => {
@@ -150,7 +161,14 @@ const Users = () => {
         onClose={handleCloseUserModal}
         userToEdit={editingUser}
         onSave={handleSaveUser}
-        isSaving={isLoading}
+        loggedInUser={loggedInUser}
+        onOpenChangePassword={handleOpenChangePasswordModal}
+      />
+
+      <ChangePasswordModal
+        isOpen={isChangePasswordModalOpen}
+        onClose={() => setIsChangePasswordModalOpen(false)}
+        user={userForPasswordChange}
       />
 
       <ConfirmationModal

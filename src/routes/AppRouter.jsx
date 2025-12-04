@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import AdminLayout from '../layouts/AdminLayout/AdminLayout';
@@ -14,6 +14,7 @@ const Patients = lazy(() => import('../pages/admin/Patients'));
 const Agenda = lazy(() => import('../pages/admin/Agenda'));
 const PatientDetail = lazy(() => import('../pages/admin/PatientDetail'));
 const Settings = lazy(() => import('../pages/admin/Settings'));
+const UserSettings = lazy(() => import('../pages/admin/UserSettings'));
 const Users = lazy(() => import('../pages/admin/Users'));
 const Reports = lazy(() => import('../pages/admin/Reports'));
 const PublicBooking = lazy(() => import('../pages/public/PublicBooking'));
@@ -65,8 +66,12 @@ const AppRouter = () => {
             <Route path="pacientes" element={<Patients />} />
             <Route path="pacientes/:patientId" element={<PatientDetail />} />
             <Route path="agenda" element={<Agenda />} />
+            <Route path="user-settings" element={<UserSettings />} />
             <Route path="configuracion" element={<Settings />} />
-            <Route path="usuarios" element={<Users />} />
+            <Route 
+              path="usuarios" 
+              element={<PrivateRoute allowedRoles={['Admin']}><Users /></PrivateRoute>} 
+            />
             <Route path="reportes" element={<Reports />} />
           </Route>
 

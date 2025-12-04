@@ -70,6 +70,11 @@ const AuthLogic = ({ children }) => {
     navigate('/login'); // Redirigimos a la página de login
   };
 
+  const updateUser = (updatedUserData) => {
+    setUser(updatedUserData);
+    localStorage.setItem('user', JSON.stringify(updatedUserData));
+  };
+
   const value = {
     user,
     token,
@@ -79,6 +84,7 @@ const AuthLogic = ({ children }) => {
     isSubmitting, // Nuevo estado para el botón
     login,
     logout,
+    updateUser,
   };
 
   // No renderizamos los hijos hasta que sepamos si hay una sesión activa o no

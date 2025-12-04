@@ -6,6 +6,7 @@
     "@date-io/date-fns": "^3.2.1",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@hookform/resolvers": "^5.2.2",
     "@mui/material": "^7.3.6",
     "@mui/x-date-pickers": "^8.19.0",
     "axios": "^1.6.2",
@@ -16,11 +17,13 @@
     "react-big-calendar": "^1.19.4",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^18.2.0",
+    "react-hook-form": "^7.68.0",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^6.20.1",
     "react-scripts": "5.0.1",
     "react-select": "^5.10.2",
-    "sass": "^1.69.5"
+    "sass": "^1.69.5",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.10",

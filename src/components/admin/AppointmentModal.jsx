@@ -1,10 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
-import toast from 'react-hot-toast';
+import { useEffect, useMemo } from 'react';
 import { useModalInteraction } from '../../hooks/useModalInteraction';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useApi } from '../../hooks/useApi';
 import Select from 'react-select';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -12,10 +14,23 @@ import { DesktopTimePicker, renderTimeViewClock } from '@mui/x-date-pickers';
 import { esES } from '@mui/x-date-pickers/locales';
 
 const getEmptyForm = () => ({
+  id: null,
   pacienteId: '',
   usuarioId: '',
   motivo: '',
   observaciones: '',
+  appointmentTime: null,
+});
+
+const appointmentSchema = z.object({
+  pacienteId: z.string().min(1, 'Debe seleccionar un paciente.'),
+  usuarioId: z.string().min(1, 'El odontólogo es requerido.'),
+  motivo: z.string().min(1, 'El motivo de la cita es requerido.'),
+  observaciones: z.string().optional(),
+  appointmentTime: z.date({ required_error: "La hora de la cita es requerida." }).nullable(false).refine(date => {
+    const hour = date.getHours();
+    return hour >= 9 && hour < 18;
+  }, { message: "La hora de la cita debe estar entre las 9:00 AM y las 6:00 PM." }),
 });
 
 const customSelectStyles = {
@@ -52,20 +67,18 @@ const AppointmentModal = ({
   selectedUserId: agendaSelectedUserId,
   scheduleConfig 
 }) => {
-  const [formData, setFormData] = useState(getEmptyForm());
-  const [appointmentTime, setAppointmentTime] = useState(null); // Estado para la hora de la cita
-  const { isLoading: isSaving } = useApi(); // Ya no necesitamos 'get' aquí
+  const { isLoading: isSaving } = useApi();
   const modalRef = useModalInteraction(isOpen, onClose, isSaving);
   const isEditing = !!eventToEdit;
+
+  const { control, register, handleSubmit, reset, formState: { errors } } = useForm({
+    resolver: zodResolver(appointmentSchema),
+    defaultValues: getEmptyForm(),
+  });
 
   const patientOptions = useMemo(() =>
     patients.map(p => ({ value: p.id, label: p.nombreCompleto })),
     [patients]
-  );
-
-  const selectedPatient = useMemo(() =>
-    patientOptions.find(option => option.value === formData.pacienteId),
-    [patientOptions, formData.pacienteId]
   );
 
   // **CORREGIDO**: La fecha activa SIEMPRE debe ser la del día seleccionado en el calendario.
@@ -77,82 +90,54 @@ const AppointmentModal = ({
   useEffect(() => {
     if (isOpen) {
       if (eventToEdit) {
-        // Modo Editar: Cargamos los datos de la cita existente
-        setFormData({
+        reset({
           id: eventToEdit.id,
           pacienteId: eventToEdit.pacienteId || '',
           usuarioId: eventToEdit.usuarioId || '',
           motivo: eventToEdit.motivo || '',
           observaciones: eventToEdit.observaciones || '',
+          appointmentTime: new Date(eventToEdit.fechaHora),
         });
-        setAppointmentTime(new Date(eventToEdit.fechaHora));
       } else if (slotInfo) {
-        // Modo Crear: Reseteamos el formulario y pre-seleccionamos datos
-        setAppointmentTime(slotInfo.start);
-        setFormData({ ...getEmptyForm(), usuarioId: agendaSelectedUserId });
+        reset({
+          ...getEmptyForm(),
+          usuarioId: agendaSelectedUserId,
+          appointmentTime: slotInfo.start,
+        });
       }
     } else {
-      setAppointmentTime(null);
-      setFormData(getEmptyForm());
+      reset(getEmptyForm());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, eventToEdit, slotInfo]);
+  }, [isOpen, eventToEdit, slotInfo, reset]);
 
-  const handlePatientChange = (selectedOption) => {
-    setFormData(prev => ({ ...prev, pacienteId: selectedOption ? selectedOption.value : '' }));
-  };
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!formData.pacienteId || !formData.usuarioId || !formData.motivo) {
-      toast.error('Paciente, Odontólogo y Motivo son obligatorios.');
-      return;
-    }
-
-    if (appointmentTime) {
-      const selectedHour = appointmentTime.getHours();
-      const isWithinWorkingHours = selectedHour >= 9 && selectedHour < 18;
-
-      if (!isWithinWorkingHours) {
-        toast.error('La hora de la cita debe estar entre las 9:00 AM y las 6:00 PM.');
-        return;
-      }
-    }
-
-    const finalFechaHora = format(appointmentTime, "yyyy-MM-dd'T'HH:mm:ss");
+  const onFormSubmit = (data) => {
+    const finalFechaHora = format(data.appointmentTime, "yyyy-MM-dd'T'HH:mm:ss");
 
     // Construimos el payload exacto que la API espera
     const payload = {
-      pacienteId: formData.pacienteId,
-      usuarioId: formData.usuarioId,
-      motivo: formData.motivo,
-      observaciones: formData.observaciones,      
+      pacienteId: data.pacienteId,
+      usuarioId: data.usuarioId,
+      motivo: data.motivo,
+      observaciones: data.observaciones,      
       fechaHora: finalFechaHora,
       // La duración ahora la define el backend o es un valor fijo.
       duracionMinutos: 30, // O el valor que corresponda
-      // Los campos appointmentDate y startTime se pueden derivar en el backend desde fechaHora si es necesario
     };
     
-    // El ID solo se pasa si estamos editando, para construir la URL. No va en el payload.
-    onSave(formData.id, payload);
+    onSave(data.id, payload);
   };
-  
-  const handleInputChange = (e) => {
-    const { id, value } = e.target;
-    setFormData(prev => ({ ...prev, [id]: value }));
-  };
-
-  const handleTimeChange = (newDate) => setAppointmentTime(newDate);
 
   const modalTitle = useMemo(() => {
     if (isEditing) {
       return 'Editar Cita';
     }
-    if (appointmentTime) {
-      const formattedTime = format(appointmentTime, 'h:mm a', { locale: es });
+    if (control._getWatch('appointmentTime')) {
+      const formattedTime = format(control._getWatch('appointmentTime'), 'h:mm a', { locale: es });
       return `Nueva Cita a las: ${formattedTime}`;
     }
     return 'Crear Nueva Cita';
-  }, [isEditing, appointmentTime]);
+  }, [isEditing]);
 
   if (!isOpen) {
     return null;
@@ -166,60 +151,75 @@ const AppointmentModal = ({
           <button onClick={onClose} disabled={isSaving} className="text-gray-400 hover:text-gray-600 text-2xl leading-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 rounded">&times;</button>
         </div>
         <div className="p-6 overflow-y-auto">
-          <form id="appointment-form" onSubmit={handleSubmit}>
+          <form id="appointment-form" onSubmit={handleSubmit(onFormSubmit)}>
           <div className="space-y-4">
             <div>
               <label htmlFor="pacienteId" className="block text-sm font-medium text-gray-800">Paciente</label>
-              <Select
-                id="pacienteId"
-                options={patientOptions}
-                value={selectedPatient}
-                onChange={handlePatientChange}
-                placeholder="Buscar y seleccionar un paciente..."
-                noOptionsMessage={() => 'No se encontraron pacientes'}
-                className="mt-1"
-                styles={customSelectStyles}
-                required
+              <Controller
+                name="pacienteId"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    options={patientOptions}
+                    value={patientOptions.find(option => option.value === field.value)}
+                    onChange={option => field.onChange(option ? option.value : '')}
+                    placeholder="Buscar y seleccionar un paciente..."
+                    noOptionsMessage={() => 'No se encontraron pacientes'}
+                    className="mt-1"
+                    styles={customSelectStyles}
+                  />
+                )}
               />
+              {errors.pacienteId && <p className="mt-1 text-sm text-red-600">{errors.pacienteId.message}</p>}
             </div>
             {(slotInfo || isEditing) && (
               <div>
                 <label htmlFor="appointment-time" className="block text-sm font-medium text-gray-800">Hora de la Cita</label>
-                <LocalizationProvider 
-                  dateAdapter={AdapterDateFns} 
-                  adapterLocale={es}
-                  localeText={esES.components.MuiLocalizationProvider.defaultProps.localeText}
-                >
-                  <DesktopTimePicker
-                    value={appointmentTime}
-                    onChange={handleTimeChange}
-                    minutesStep={5} // Puedes ajustar el paso de los minutos
-                    ampm={true}
-                    className="w-full mt-1"
-                    slotProps={{
-                      textField: { 
-                        id: 'appointment-time', 
-                        className: 'w-full', 
-                        variant: 'outlined', 
-                        size: 'small' 
-                      }
-                    }}
-                    viewRenderers={{
-                      hours: renderTimeViewClock,
-                      minutes: renderTimeViewClock,
-                      seconds: renderTimeViewClock,
-                    }}
-                  />
-                </LocalizationProvider>
+                <Controller
+                  name="appointmentTime"
+                  control={control}
+                  render={({ field }) => (
+                    <LocalizationProvider 
+                      dateAdapter={AdapterDateFns} 
+                      adapterLocale={es}
+                      localeText={esES.components.MuiLocalizationProvider.defaultProps.localeText}
+                    >
+                      <DesktopTimePicker
+                        {...field}
+                        minutesStep={5}
+                        ampm={true}
+                        className="w-full mt-1"
+                        slotProps={{
+                          textField: { 
+                            id: 'appointment-time', 
+                            className: 'w-full', 
+                            variant: 'outlined', 
+                            size: 'small',
+                            error: !!errors.appointmentTime,
+                            helperText: errors.appointmentTime?.message,
+                          }
+                        }}
+                        viewRenderers={{
+                          hours: renderTimeViewClock,
+                          minutes: renderTimeViewClock,
+                          seconds: renderTimeViewClock,
+                        }}
+                      />
+                    </LocalizationProvider>
+                  )}
+                />
               </div>
             )}
             <div>
               <label htmlFor="motivo" className="block text-sm font-medium text-gray-800">Motivo de la Cita</label>
-              <input type="text" id="motivo" value={formData.motivo} onChange={handleInputChange} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required />
+              <input type="text" id="motivo" {...register('motivo')} className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+              {errors.motivo && <p className="mt-1 text-sm text-red-600">{errors.motivo.message}</p>}
             </div>
             <div>
               <label htmlFor="observaciones" className="block text-sm font-medium text-gray-800">Observaciones</label>
-              <textarea id="observaciones" value={formData.observaciones || ''} onChange={handleInputChange} rows="3" className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+              <textarea id="observaciones" {...register('observaciones')} rows="3" className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+              {errors.observaciones && <p className="mt-1 text-sm text-red-600">{errors.observaciones.message}</p>}
             </div>
           </div>
         </form>

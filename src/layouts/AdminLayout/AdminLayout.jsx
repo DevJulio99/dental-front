@@ -30,9 +30,11 @@ const AdminLayout = () => {
           <NavLink to="/agenda" className={navLinkClasses}>
             Agenda
           </NavLink>
-          <NavLink to="/usuarios" className={navLinkClasses}>
-            Usuarios
-          </NavLink>
+          {user?.rol === 'Admin' && (
+            <NavLink to="/usuarios" className={navLinkClasses}>
+              Usuarios
+            </NavLink>
+          )}
           <NavLink to="/reportes" className={navLinkClasses}>
             Reportes
           </NavLink>

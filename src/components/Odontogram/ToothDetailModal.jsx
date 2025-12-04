@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import toast from 'react-hot-toast';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { format } from 'date-fns';
 import es from 'date-fns/locale/es';
 import LoadingSpinner from '../common/LoadingSpinner/LoadingSpinner';
@@ -39,9 +42,6 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
   const { get, post, isLoading } = useApi();
   const [historial, setHistorial] = useState([]);
   const [loadingHistorial, setLoadingHistorial] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState('sano');
-  const [observaciones, setObservaciones] = useState('');
-  const [fechaRegistro, setFechaRegistro] = useState(new Date().toISOString().split('T')[0]);
   const toothName = getToothName(toothNumber);
 
   const statusOptions = [
@@ -58,9 +58,32 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
     { id: 'puente', label: 'Puente', color: 'bg-violet-500' },
   ];
 
+  const statusIds = statusOptions.map(opt => opt.id);
+
+  const detailSchema = z.object({
+    selectedStatus: z.enum(statusIds, { errorMap: () => ({ message: "Debes seleccionar un estado." }) }),
+    observaciones: z.string().max(1000, "Máximo 1000 caracteres.").optional(),
+    fechaRegistro: z.string().min(1, 'La fecha es requerida.')
+      .refine(val => new Date(val) < new Date(new Date().setHours(23, 59, 59, 999)), {
+        message: 'La fecha no puede ser futura.',
+      }).refine(val => new Date(val).getFullYear() >= 1900, {
+        message: 'El año no es válido.',
+      }),
+  });
+
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+    resolver: zodResolver(detailSchema),
+    defaultValues: {
+      selectedStatus: 'sano',
+      observaciones: '',
+      fechaRegistro: new Date().toISOString().split('T')[0],
+    }
+  });
+
   useEffect(() => {
     if (isOpen && patientId && toothNumber) {
       loadHistorial();
+      reset();
     }
   }, [isOpen, patientId, toothNumber]);
 
@@ -77,28 +100,20 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
     }
   };
 
-  const handleSave = async () => {
-    if (!selectedStatus) {
-      toast.error('Seleccione un estado');
-      return;
-    }
-
+  const onFormSubmit = async (data) => {
     try {
-      const fecha = fechaRegistro ? new Date(fechaRegistro + 'T00:00:00') : new Date();
-      const fechaFormatted = fecha.toISOString().split('T')[0];
-
       await post('/Odontogramas', {
         pacienteId: patientId,
         numeroDiente: toothNumber,
-        estado: selectedStatus,
-        observaciones: observaciones.trim() || null,
-        fechaRegistroDateTime: fechaFormatted,
+        estado: data.selectedStatus,
+        observaciones: data.observaciones.trim() || null,
+        fechaRegistroDateTime: data.fechaRegistro,
       });
 
       toast.success(`Estado del diente ${toothNumber} actualizado correctamente`);
-      setObservaciones('');
-      setFechaRegistro(new Date().toISOString().split('T')[0]);
-      setSelectedStatus('sano');
+      
+      reset();
+
       await loadHistorial();
       if (onUpdate) onUpdate();
     } catch (error) {
@@ -144,7 +159,7 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
           <div className="bg-white px-6 pt-6 pb-4 overflow-y-auto">
 
             {/* Formulario para agregar nuevo registro mejorado */}
-            <div className="mb-6 p-5 bg-gradient-to-br from-gray-50 to-primary-50 rounded-xl border-2 border-primary-200 shadow-sm">
+            <form onSubmit={handleSubmit(onFormSubmit)} className="mb-6 p-5 bg-gradient-to-br from-gray-50 to-primary-50 rounded-xl border-2 border-primary-200 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
                 <svg className="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -158,8 +173,7 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
                     Estado
                   </label>
                   <select
-                    value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    {...register('selectedStatus')}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   >
                     {statusOptions.map(opt => (
@@ -174,11 +188,11 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
                   </label>
                   <input
                     type="date"
-                    value={fechaRegistro}
-                    onChange={(e) => setFechaRegistro(e.target.value)}
+                    {...register('fechaRegistro')}
                     max={new Date().toISOString().split('T')[0]}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
+                  {errors.fechaRegistro && <p className="mt-1 text-sm text-red-600">{errors.fechaRegistro.message}</p>}
                 </div>
               </div>
 
@@ -187,18 +201,17 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
                   Observaciones (opcional)
                 </label>
                 <textarea
-                  value={observaciones}
-                  onChange={(e) => setObservaciones(e.target.value)}
+                  {...register('observaciones')}
                   rows="3"
                   maxLength={1000}
                   placeholder="Agregar observaciones sobre el estado del diente..."
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
-                <p className="text-xs text-gray-500 mt-1">{observaciones.length}/1000 caracteres</p>
+                {errors.observaciones && <p className="mt-1 text-sm text-red-600">{errors.observaciones.message}</p>}
               </div>
 
               <button
-                onClick={handleSave}
+                type="submit"
                 disabled={isLoading}
                 className="w-full px-4 py-2.5 text-sm font-semibold text-white rounded-lg bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 active:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center gap-2"
               >
@@ -219,7 +232,7 @@ const ToothDetailModal = ({ isOpen, onClose, patientId, toothNumber, onUpdate })
                   </>
                 )}
               </button>
-            </div>
+            </form>
 
             {/* Historial mejorado */}
             <div>
