@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import PatientModal from '../../components/admin/PatientModal';
 import { format } from 'date-fns';
@@ -17,6 +17,7 @@ const Patients = () => {
   const [isListLoading, setIsListLoading] = useState(true);
   const [listError, setListError] = useState(null); // Estado de error solo para el listado
   // `null` = cerrado, `undefined` = crear, `{...}` = editar
+  const [searchTerm, setSearchTerm] = useState('');
   const [editingPatient, setEditingPatient] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   // Estado para el paciente que se va a eliminar
@@ -93,6 +94,22 @@ const Patients = () => {
       }
     }
   };
+
+  const filteredPatients = useMemo(() => {
+    if (!searchTerm) {
+      return patients;
+    }
+    
+    const normalizedSearchTerm = searchTerm
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+    return patients.filter(patient =>
+      patient.nombreCompleto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(normalizedSearchTerm)
+    );
+  }, [patients, searchTerm]);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -106,6 +123,16 @@ const Patients = () => {
           </svg>
           Agregar Paciente
         </button>
+      </div>
+
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Buscar paciente por nombre..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full max-w-md px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+        />
       </div>
 
       <div className="overflow-x-auto bg-white rounded-xl shadow-soft">
@@ -122,7 +149,7 @@ const Patients = () => {
           <tbody>
             {isListLoading && <tr><td colSpan="5" className="text-center p-8"><LoadingSpinner /></td></tr>}
             {listError && !isListLoading && <tr><td colSpan="5" className="text-center p-8 text-error-600 font-medium">{listError}</td></tr>}
-            {!isListLoading && !listError && patients.map((patient) => (
+            {!isListLoading && !listError && filteredPatients.map((patient) => (
               <tr key={patient.id} className="bg-white border-b border-gray-100 hover:bg-primary-50 transition-colors duration-150">
                 <th scope="row" className="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">
                   {patient.nombreCompleto}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css'; // ¡Importación clave!
 import './Agenda.scss';
@@ -7,10 +7,11 @@ import format from 'date-fns/format';
 import parse from 'date-fns/parse';
 import startOfWeek from 'date-fns/startOfWeek';
 import getDay from 'date-fns/getDay';
-import { isBefore, startOfToday } from 'date-fns';
+import { isBefore } from 'date-fns';
 import es from 'date-fns/locale/es';
 import AppointmentModal from '../../components/admin/AppointmentModal';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
+import Select from 'react-select';
 import { useApi } from '../../hooks/useApi';
 import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
 
@@ -35,6 +36,27 @@ const CustomEvent = ({ event }) => (
     </div>
   </div>
 );
+
+const customSelectStyles = {
+  control: (provided, state) => ({
+    ...provided,
+    border: state.isFocused ? '2px solid #3b82f6' : '1px solid #d1d5db',
+    borderRadius: '0.375rem',
+    boxShadow: state.isFocused ? '0 0 0 2px rgba(59, 130, 246, 0.2)' : 'none',
+    '&:hover': {
+      borderColor: state.isFocused ? '#3b82f6' : '#9ca3af',
+    },
+    padding: '2px',
+  }),
+  option: (provided, state) => ({
+    ...provided,
+    backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#eff6ff' : 'white',
+    color: state.isSelected ? 'white' : '#1f2937',
+    '&:active': {
+      backgroundColor: '#2563eb',
+    },
+  }),
+};
 
 const Agenda = () => {
   const [events, setEvents] = useState([]);
@@ -75,6 +97,11 @@ const Agenda = () => {
     });
     return map;
   }, [users, colorPalette]);
+
+  const userOptions = useMemo(() => 
+    users.map(user => ({ value: user.id, label: `${user.nombre} ${user.apellido}` })),
+    [users]
+  );
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -176,6 +203,11 @@ const Agenda = () => {
 
   // Esta función se dispara al seleccionar un rango de tiempo vacío en el calendario
   const handleSelectSlot = (slotInfo) => {
+    if (!selectedUserId) {
+      toast.error('Por favor, seleccione un odontólogo para agendar una cita.');
+      return;
+    }
+
     //console.log('slotInfo:', slotInfo);
     // 1. Validamos que no se puedan crear citas en fechas u horas pasadas del día actual.
     if (isBefore(slotInfo.start, new Date())) {
@@ -318,7 +350,7 @@ const Agenda = () => {
   };
 
   const filteredEvents = useMemo(() => {
-    if (!selectedUserId) return events;
+    if (!selectedUserId) return [];
     return events.filter(event => event.resource?.usuarioId === selectedUserId);
   }, [events, selectedUserId]);
 
@@ -336,17 +368,18 @@ const Agenda = () => {
         <label htmlFor="user-select-agenda" className="block text-sm font-semibold text-gray-800 mb-2">
           Mostrando agenda para:
         </label>
-        <select
+        <Select
           id="user-select-agenda"
-          value={selectedUserId}
-          onChange={(e) => setSelectedUserId(e.target.value)}
-          className="block w-full max-w-xs px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
-          disabled={users.length === 0}
-        >
-          {users.map(user => (
-            <option key={user.id} value={user.id}>{`${user.nombre} ${user.apellido}`}</option>
-          ))}
-        </select>
+          options={userOptions}
+          value={userOptions.find(option => option.value === selectedUserId)}
+          onChange={option => setSelectedUserId(option ? option.value : '')}
+          placeholder="Filtrar por odontólogo..."
+          noOptionsMessage={() => 'No se encontraron odontólogos'}
+          className="block w-full max-w-xs transition-all duration-200"
+          styles={customSelectStyles}
+          isDisabled={users.length === 0}
+          isClearable
+        />
       </div>
       <div className="relative h-[calc(100vh-14rem)]">
         <Calendar
