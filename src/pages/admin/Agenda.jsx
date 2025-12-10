@@ -13,6 +13,7 @@ import AppointmentModal from '../../components/admin/AppointmentModal';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import Select from 'react-select';
 import { useApi } from '../../hooks/useApi';
+import { useAuth } from '../../hooks/useAuth';
 import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
 
 // Configuración del localizador en español
@@ -59,6 +60,7 @@ const customSelectStyles = {
 };
 
 const Agenda = () => {
+  const { user: loggedInUser } = useAuth();
   const [events, setEvents] = useState([]);
   const [patients, setPatients] = useState([]);
   const [users, setUsers] = useState([]);
@@ -104,26 +106,38 @@ const Agenda = () => {
   );
 
   useEffect(() => {
+    if (!loggedInUser) return;
+
     const fetchAppointments = async () => {
       try {
         setIsListLoading(true);
         setListError(null);
 
         // Hacemos todas las llamadas en paralelo para mayor eficiencia
+        const citasPromise = get('/Citas');
+        const patientsPromise = get('/Pacientes');
+        const usersPromise = loggedInUser.rol === 'Admin' 
+          ? get('/Usuarios') 
+          : Promise.resolve([loggedInUser]);
+
         const [citasData, patientsData, usersData] = await Promise.all([
-          get('/Citas'),
-          get('/Pacientes'),
-          get('/Usuarios')
+          citasPromise,
+          patientsPromise,
+          usersPromise
         ]);
 
         // Primero, poblamos los estados de pacientes y usuarios.
         const validPatients = Array.isArray(patientsData) ? patientsData : [];
-        const validUsers = Array.isArray(usersData) ? usersData.filter(u => u.rol === 'Odontologo') : [];
+        const odontologos = Array.isArray(usersData) ? usersData.filter(u => u.rol === 'Odontologo') : [];
         setPatients(validPatients);
-        setUsers(validUsers);
+        setUsers(odontologos);
         
-        if (validUsers.length > 0 && !selectedUserId) {
-          setSelectedUserId(validUsers[0].id);
+        if (loggedInUser.rol === 'Admin') {
+          if (odontologos.length > 0 && !selectedUserId) {
+            setSelectedUserId(odontologos[0].id);
+          }
+        } else {
+          setSelectedUserId(loggedInUser.id);
         }
 
         // Luego, con los datos ya disponibles, formateamos las citas.
@@ -147,7 +161,7 @@ const Agenda = () => {
     };
 
     fetchAppointments();
-  }, [get]);
+  }, [get, loggedInUser]);
 
   // Efecto para cargar el horario del odontólogo seleccionado
   useEffect(() => {
@@ -364,23 +378,26 @@ const Agenda = () => {
 
   return (
     <div>
-      <div className="mb-6 p-4 bg-white rounded-xl shadow-soft">
-        <label htmlFor="user-select-agenda" className="block text-sm font-semibold text-gray-800 mb-2">
-          Mostrando agenda para:
-        </label>
-        <Select
-          id="user-select-agenda"
-          options={userOptions}
-          value={userOptions.find(option => option.value === selectedUserId)}
-          onChange={option => setSelectedUserId(option ? option.value : '')}
-          placeholder="Filtrar por odontólogo..."
-          noOptionsMessage={() => 'No se encontraron odontólogos'}
-          className="block w-full max-w-xs transition-all duration-200"
-          styles={customSelectStyles}
-          isDisabled={users.length === 0}
-          isClearable
-        />
-      </div>
+      {loggedInUser?.rol === 'Admin' && (
+        <div className="mb-6 p-4 bg-white rounded-xl shadow-soft">
+          <label htmlFor="user-select-agenda" className="block text-sm font-semibold text-gray-800 mb-2">
+            Mostrando agenda para:
+          </label>
+          <Select
+            id="user-select-agenda"
+            options={userOptions}
+            value={userOptions.find(option => option.value === selectedUserId)}
+            onChange={option => setSelectedUserId(option ? option.value : '')}
+            placeholder="Filtrar por odontólogo..."
+            noOptionsMessage={() => 'No se encontraron odontólogos'}
+            className="block w-full max-w-xs transition-all duration-200"
+            styles={customSelectStyles}
+            isDisabled={users.length === 0}
+            isClearable
+          />
+        </div>
+      )}
+
       <div className="relative h-[calc(100vh-14rem)]">
         <Calendar
           localizer={localizer}
