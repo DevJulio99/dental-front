@@ -20,6 +20,7 @@ const getEmptyForm = () => ({
   motivo: '',
   observaciones: '',
   appointmentTime: null,
+  estado: 'scheduled',
 });
 
 const appointmentSchema = z.object({
@@ -31,6 +32,7 @@ const appointmentSchema = z.object({
     const hour = date.getHours();
     return hour >= 9 && hour < 18;
   }, { message: "La hora de la cita debe estar entre las 9:00 AM y las 6:00 PM." }),
+  estado: z.string(),
 });
 
 const customSelectStyles = {
@@ -54,6 +56,33 @@ const customSelectStyles = {
   }),
 };
 
+const statusOptions = [
+  { value: 'confirmed', label: 'Confirmada' },
+  { value: 'InProgress', label: 'En Curso' },
+  { value: 'completed', label: 'Completada' },
+  { value: 'cancelled', label: 'Cancelada' },
+];
+
+const statusDisplayMap = {
+  scheduled: { label: 'Agendada', className: 'bg-blue-100 text-blue-800' },
+  confirmed: { label: 'Confirmada', className: 'bg-green-100 text-green-800' },
+  InProgress: { label: 'En Curso', className: 'bg-yellow-100 text-yellow-800' },
+  completed: { label: 'Completada', className: 'bg-gray-100 text-gray-800' },
+  cancelled: { label: 'Cancelada', className: 'bg-red-100 text-red-800' },
+  no_show: { label: 'No Asistió', className: 'bg-orange-100 text-orange-800' },
+};
+
+const backendToFormStatusMap = {
+  Scheduled: 'scheduled',
+  Confirmed: 'confirmed',
+  InProgress: 'InProgress',
+  Completed: 'completed',
+  Cancelled: 'cancelled',
+  NoShow: 'no_show',
+};
+
+const getStatusDisplay = (status) => statusDisplayMap[status] || { label: status, className: 'bg-gray-100 text-gray-800' };
+
 const AppointmentModal = ({ 
   isOpen, 
   onClose, 
@@ -71,7 +100,7 @@ const AppointmentModal = ({
   const modalRef = useModalInteraction(isOpen, onClose, isSaving);
   const isEditing = !!eventToEdit;
 
-  const { control, register, handleSubmit, reset, formState: { errors } } = useForm({
+  const { control, register, handleSubmit, reset, watch, formState: { errors } } = useForm({
     resolver: zodResolver(appointmentSchema),
     defaultValues: getEmptyForm(),
   });
@@ -97,6 +126,7 @@ const AppointmentModal = ({
           motivo: eventToEdit.motivo || '',
           observaciones: eventToEdit.observaciones || '',
           appointmentTime: new Date(eventToEdit.fechaHora),
+          estado: backendToFormStatusMap[eventToEdit.estado] || 'scheduled',
         });
       } else if (slotInfo) {
         reset({
@@ -121,23 +151,35 @@ const AppointmentModal = ({
       motivo: data.motivo,
       observaciones: data.observaciones,      
       fechaHora: finalFechaHora,
+      estado: data.estado,
       // La duración ahora la define el backend o es un valor fijo.
       duracionMinutos: 30, // O el valor que corresponda
     };
     
-    onSave(data.id, payload);
+    onSave(isEditing ? eventToEdit.id : null, payload);
   };
+
+  const appointmentTimeValue = watch('appointmentTime');
 
   const modalTitle = useMemo(() => {
     if (isEditing) {
-      return 'Editar Cita';
+      const displayStatus = backendToFormStatusMap[eventToEdit.estado] || 'scheduled';
+
+      const statusInfo = getStatusDisplay(displayStatus);
+
+      return (
+        <div className="flex items-center gap-3">
+          <span>Editar Cita</span>
+          <span className={`text-sm font-semibold px-2.5 py-0.5 rounded-full ${statusInfo.className}`}>{statusInfo.label}</span>
+        </div>
+      );
     }
-    if (control._getWatch('appointmentTime')) {
-      const formattedTime = format(control._getWatch('appointmentTime'), 'h:mm a', { locale: es });
+    if (appointmentTimeValue) {
+      const formattedTime = format(appointmentTimeValue, 'h:mm a', { locale: es });
       return `Nueva Cita a las: ${formattedTime}`;
     }
     return 'Crear Nueva Cita';
-  }, [isEditing]);
+  }, [isEditing, eventToEdit, appointmentTimeValue]);
 
   if (!isOpen) {
     return null;
@@ -173,6 +215,26 @@ const AppointmentModal = ({
               />
               {errors.pacienteId && <p className="mt-1 text-sm text-red-600">{errors.pacienteId.message}</p>}
             </div>
+            {isEditing && (
+              <div>
+                <label htmlFor="estado" className="block text-sm font-medium text-gray-800">Estado de la Cita</label>
+                <Controller
+                  name="estado"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      options={statusOptions}
+                      value={statusOptions.find(option => option.value === field.value)}
+                      onChange={option => field.onChange(option ? option.value : '')}
+                      className="mt-1"
+                      styles={customSelectStyles}
+                    />
+                  )}
+                />
+                {errors.estado && <p className="mt-1 text-sm text-red-600">{errors.estado.message}</p>}
+              </div>
+            )}
             {(slotInfo || isEditing) && (
               <div>
                 <label htmlFor="appointment-time" className="block text-sm font-medium text-gray-800">Hora de la Cita</label>
@@ -237,7 +299,7 @@ const AppointmentModal = ({
           )}
           <button type="button" onClick={onClose} disabled={isSaving} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50">Cancelar</button>
           <button type="submit" form="appointment-form" disabled={isSaving} className="px-4 py-2 text-sm font-medium text-blue-50 rounded-md bg-primary hover:bg-hover-btn-primary font-semibold hover:text-white disabled:bg-gray-400">
-            {isSaving ? 'Guardando...' : 'Agendar Cita'}
+            {isSaving ? 'Guardando...' : (isEditing ? 'Guardar Cambios' : 'Agendar Cita')}
           </button>
         </div>
       </div>
